@@ -48,6 +48,7 @@ library(data.table)
 library(ff)
 library(stars)
 library(ncmeta)
+
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 conversion_function <- function(data){
@@ -63,12 +64,131 @@ plan(
   workers = parallel::makeCluster(n_cores)
 )
 
-read_ncdf(here("API", "2m_temp_2023.nc")) %>%
+
+tic()
+object <- terra::rast(here::here("API", "2m_temp_2023.nc"))
+object_tbl <- terra::as.data.frame(object, xy = TRUE) %>% as_tibble()
+toc()
+object_tbl %>% write_csv(here::here("Data", "2m_temp_2023.csv"))
+object_tbl %>% write_rds(here::here("Data", "2m_temp_2023.rds"))
+
+terra::describe(here::here("API", "2m_temp_2023.nc"))
+data_tbl <- terra::as.data.frame(data, xy = TRUE)
+data_tbl %>% as_tibble()
+
+glimpse(data_tbl)
+
+terra::summary()
   dplyr::select(t2m)
   slice(index = 1, along = "valid_time") %>%
   plot()
 
+library(sf)
+library(stars)
+library(tidyverse)
+library(raster)
+library(terra)
 
+object <-   stars::read_stars(
+  here::here("Data", "landscan-global-2022-assets", "landscan-global-2022-colorized.tif"), proxy = T)
+object <- setNames(object, c("population"))
+str(stars::st_dimensions(object))
+stars::st_get_dimension_values(object, "x") %>%  length()
+stars::st_get_dimension_values(object, "y") %>%  length()
+plot(object, axes = TRUE)
+
+describe(here::here("Data", "landscan-global-2022-assets", "landscan-global-2022-colorized.tif"))
+data <- terra::rast(here::here("Data", "landscan-global-2022-assets", "landscan-global-2022.tif"))
+
+
+plot(data)
+terra::summary(data)
+terra::summary(values(data))
+data_tbl <- terra::as.data.frame(data, xy = TRUE)
+
+
+terra::describe(terra::rast(here::here("Data", "spei01.nc")))
+data <- terra::rast(here::here("Data", "spei48.nc"))
+terra::summary(data)
+terra::plot(data)
+
+
+data %>% terra::plot()
+data_tbl <- terra::as.data.frame(data, xy = TRUE) %>% as_tibble()
+str(data_tbl)
+data_tbl %>% head()
+data_tbl %>% write_csv(here::here("Data", "spei48.csv"))
+data_tbl %>% write_rds(here::here("Data", "spei48.rds"))
+
+
+
+st_apply(object[,,,1], c("x", "y"), mean)
+
+to_data_frame <- function(data, i){
+  temp <- as.data.frame(data[,,,i], xy = TRUE) %>% as_tibble()
+
+  return(temp)
+}
+
+
+registerDoFuture()
+
+n_cores <- parallel::detectCores()
+plan(
+  strategy = cluster,
+  workers = parallel::makeCluster(n_cores)
+)
+
+
+tic()
+  object_tbl <- as.data.frame(object[,,,1], xy = TRUE) %>% as_tibble()
+  object_2_tbl <- as.data.frame(object[,,,2], xy = TRUE) %>% as_tibble()
+data <-   object_tbl %>%
+    left_join(object_2_tbl, by = c("x", "y"))
+toc()
+
+
+plan(sequential)
+tic()
+f <- future({
+  object_tbl <- as.data.frame(object[,,,1], xy = TRUE) %>% as_tibble()
+  object_2_tbl <- as.data.frame(object[,,,2], xy = TRUE) %>% as_tibble()
+  object_tbl %>%
+    left_join(object_2_tbl, by = c("x", "y"))
+}, lazy = TRUE)
+
+y <- value(f)
+toc()
+
+
+
+
+object_tbl %>% as_tibble()
+
+
+
+object.size(object)
+
+
+
+set.seed(115517)
+pts <- st_bbox(object) %>%  st_as_sfc()
+st_sample(pts, size = 100000, force = TRUE)
+pts <- st_sample(pts, size = 1, force = TRUE)
+
+st_extract(object, pts)
+str(pts)
+pts %>% plot()
+
+x = st_sfc(st_polygon(list(rbind(c(0,0),c(90,0),c(90,10),c(0,90),c(0,0))))) # NOT long/lat:
+plot(x)
+p_exact = st_sample(x, 10, exact = TRUE)
+p_exact %>% plot()
+aperm(object, c(2, 1))
+
+
+
+pts <- sf::st_bbox(object) %>% st_as_sfc() %>% st_sample(2, force = TRUE)
 
 
 
