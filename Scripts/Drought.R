@@ -40,20 +40,35 @@ library(stars)
 library(tidyverse)
 library(raster)
 library(terra)
+library(furrr)
 
 # Functions ---------------------------------------------------------------
 
 
 # Import -------------------------------------------------------------
-data <- terra::rast(here::here("Data", "Global_drought", "spei01.nc"))
+
+files_19_months <- list.files(path = here::here("Data", "Global_drought"), pattern = "*.nc")[1:19]
+files_48_months <- list.files(path = here::here("Data", "Global_drought"), pattern = "*.nc")[48]
+
+plan(sequential)
+data_19_months <- future_map(files_19_months, ~terra::rast(here::here("Data", "Global_drought", .x)))
+terra::plot(data_19_months[[5]])
+
+data_19_months_tbl <- future_map(data_19_months, ~terra::as.data.frame(.x, xy = TRUE) %>% as_tibble())
+
+data_19_months_tbl %>% glimpse()
+
+data_48_months <- future_map(files_48_months, ~terra::rast(here::here("Data", "Global_drought", .x)))
+terra::plot(data_48_months[[9]])
+map(data_48_months, ~terra::describe(.x))
 
 
-# Transforming to tibble --------------------------------------------------------
-data_tbl <- terra::as.data.frame(data, xy = TRUE) %>% as_tibble()
+
+data_48_months_tbl <- future_map(data_48_months, ~terra::as.data.frame(.x, xy = TRUE) %>% as_tibble())
 
 
 # Write to csv ---------------------------------------------------------------
-data_tbl %>% head() %>% write_csv(here("Outputs", "Drought", "data_tbl_sample.csv"))
+# data_tbl %>% head() %>% write_csv(here("Outputs", "Drought", "data_tbl_sample.csv"))
 
 
 # Export ---------------------------------------------------------------

@@ -7,3 +7,5 @@
 API
 Outputs
 Data
+Book
+options(prism.path = here::here(Book,Chapter 1, PRISM)

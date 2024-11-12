@@ -150,7 +150,7 @@ knitr::include_graphics("flow_chart.png", dpi = 300)
 
 In summary, a weather shock translates into idiosyncratic inflation via three channels: (i) on the demand-side, the price effect is ambiguous and depends on the sector-specific demand response to the weather shock; on the supply-side, (ii) a sector-specific weather shock changes the price in that sector directly and, lastly, (iii) by affecting the price of any other sector that supply inputs to the focal sector, it travels downstream (network weather shock). The cross-sector sum of these effects will result into aggregate inflation.
 
-Given the complex interplay of upward and downward forces on prices, the overall reaction of inflation to weather shocks depends on which countervailing dynamic dominates [@parker2018]. Moreover, “a negligible or null effect of local weather shocks on a given sector may be amplified or mitigated by weather shocks hitting other sectors with strong commercial interlinkages” [@zappala2024]. Climate change is therefore highly sectoral by nature.
+Given the complex interplay of upward and downward forces on prices, the overall reaction of inflation to weather shocks depends on which countervailing dynamic dominates [@parker2018]. Moreover, “a negligible or null effect of local weather shocks on a given sector may be amplified or mitigated by weather shocks hitting other sectors with strong commercial inter linkages” [@zappala2024]. Climate change is therefore highly sectoral by nature.
 
 
 # Data 
