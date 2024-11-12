@@ -69,11 +69,11 @@ toc()
 # Plotting ---------------------------------------------------------------
 tm_shape(world_shp, alpha = 0.2) +
   tm_polygons() +
-  tm_shape(world_2m_temp_shp %>%  filter(date == "2023-08-05")) + # for a specific day
+  tm_shape(world_2m_temp_shp %>%  filter(date == "2023-06-05")) + # for a specific day
   tm_polygons(col = "t2m", style = "cont", palette = "viridis") +
   tm_layout(legend.outside.position  =  "right", frame = NA, legend.outside = TRUE)
 
-# Write to rds ---------------------------------------------------------------
+# Export ---------------------------------------------------------------
 world_2m_temp_tbl <-
   world_2m_temp_shp %>%
   terra::as.data.frame() %>%
@@ -81,7 +81,9 @@ world_2m_temp_tbl <-
   as_tibble()
 
 write_rds(world_2m_temp_tbl,
-           file = here("Outputs", "Temperature", "world_2tm.rds"))
+           file = here("Outputs", "Temperature", "world_2m_temp_2023.rds"))
 
+write_csv(world_2m_temp_tbl,
+          file = here("world_2m_temp_2023.csv"))
 
 
