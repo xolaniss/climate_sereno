@@ -53,12 +53,27 @@ library(future)
 library(tictoc)
 library(doFuture)
 
-weighting <- function(year){
-# Import -------------------------------------------------------------
-data_sr <- stack(here::here("API", "2m_temp_year_2005.nc")
+# Population Weights -----------------------------------------------------------
+landscan <- rast(
+  here::here(
+    "Data",
+    "landscan-global-2000-assets",
+    "landscan-global-2000.tif"
+  )
 )
 
-# SHP file -------------------------------------------------------------
+population_weights <- secondary_weights(
+  secondary_raster = landscan,
+  grid = era5_grid,
+  extent = "full"
+)
+
+
+weighting <- function(year){
+# Import
+data_sr <- stack(here::here("API", paste0("2m_temp_year_", year, ".nc")))
+
+# SHP file
 world_shp <- st_read(
   here(
     "Data",
@@ -67,34 +82,17 @@ world_shp <- st_read(
   )
 )
 
-# Population Weights -------------------------------------------------------------
-# landscan <- raster(
-#   here::here(
-#     "Data",
-#     "Landscan",
-#     "landscan-global-2022-assets",
-#     "landscan-global-2022.tif"
-#   )
-# )
-#
-#
-# population_weights <- secondary_weights(
-#   secondary_raster = landscan,
-#   grid = era5_grid,
-#   extent = "full"
-# )
-
-# Country Weights -------------------------------------------------------------
+# Country Weights
 country_weights <- stagg::overlay_weights(
   polygons = world_shp,
   polygon_id_col = "iso3",
-  grid = era5_grid
-  # secondary_weights = population_weights
+  grid = era5_grid,
+  secondary_weights = population_weights
 )
 
 print(country_weights)
 
-# Aggregation -------------------------------------------------------------
+# Aggregation
 data <-
   stagg::staggregate_polynomial(
     data = data_sr - 273.15,
@@ -111,14 +109,20 @@ data_tbl <-
   rename(country = poly_id, temp = order_1 , temp2 = order_2)
 
 return(data_tbl)
+gc()
 }
 
-years <- 2005:2008
+years <- 2000:2023
 
+tic()
 weighted_temp_yearly_tbl <-
-  parallel::mclapply(years, weighting, mc.cores = 9) %>%
+  parallel::mclapply(years, weighting, mc.cores = 9, mc.preschedule = FALSE) %>%
   set_names(years) %>%
+  keep(str_detect(., "Error", negate = TRUE)) %>%
   bind_rows(.id = "year") %>%
   mutate(year = as.numeric(year))
+toc()
 
-weighted_temp_yearly_tbl
+weighted_temp_yearly_tbl %>% drop_na() %>% filter(country == "ZAF")
+
+

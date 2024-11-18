@@ -24,6 +24,7 @@ function(i) {
 
 agg_coverage <-
   function(i) {
+
     data <- exactextractr::exact_extract(data_sr,
                                          filter(world_shp, id == i),
                                          max_cells_in_memory = 3e+20) %>%
