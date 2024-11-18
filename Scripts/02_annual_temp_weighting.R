@@ -123,6 +123,5 @@ weighted_temp_yearly_tbl <-
   mutate(year = as.numeric(year))
 toc()
 
-weighted_temp_yearly_tbl %>% drop_na() %>% filter(country == "ZAF")
-
-
+weighted_temp_yearly_tbl %>% drop_na() %>%
+  write_rds(here::here("Outputs", "Temperature", "pop_weighted_temp_yearly.rds"))
