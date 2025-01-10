@@ -34,14 +34,28 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{5}
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -163,6 +177,7 @@
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
+
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -179,6 +194,7 @@
   citecolor={blue!100!black},
   urlcolor={blue!100!black},
   pdfcreator={LaTeX via pandoc}}
+
 
 \author{}
 \date{}
@@ -204,6 +220,7 @@ ipsum
 duction network, Spillovers, Weather shocks, Monetary Policy
 \textbf{JEL Codes}:E23, E32, E52, L14, O11, Q54, R15,
 \newpage
+
 
 \setstretch{1.5}
 \section{Introduction}\label{introduction}
@@ -527,7 +544,7 @@ prices than shrinking sectors.
 
 \centering{
 
-\includegraphics[width=3.12in,height=\textheight]{flow_chart.png}
+\includegraphics{flow_chart.png}
 
 }
 
@@ -550,8 +567,8 @@ overall reaction of inflation to weather shocks depends on which
 countervailing dynamic dominates \citep{parker2018}. Moreover, ``a
 negligible or null effect of local weather shocks on a given sector may
 be amplified or mitigated by weather shocks hitting other sectors with
-strong commercial interlinkages'' \citep{zappala2024}. Climate change is
-therefore highly sectoral by nature.
+strong commercial inter linkages'' \citep{zappala2024}. Climate change
+is therefore highly sectoral by nature.
 
 \section{Data}\label{data}
 
@@ -862,6 +879,7 @@ Index, or sectoral profits-to-GVA.
 \section{Appendix}\label{appendix}
 
 \subsection{Data Availability}\label{data-availability}
+
 
 
 
