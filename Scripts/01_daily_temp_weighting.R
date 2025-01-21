@@ -86,13 +86,13 @@ weighting <- function(year){
       data = data_sr - 273.15,
       overlay_weights = country_weights,
       daily_agg = "none",
-      time_agg = "year",
+      time_agg = "day",
       time_interval = '1 day',
       start_date = "2000-01-01",
       degree = 2
     )
 
-  return(data)
+    return(data)
   gc()
 }
 
@@ -111,24 +111,36 @@ population_weights <- secondary_weights(
   extent = "full"
 )
 
-# Yearly weighted data ----------------------------------------------------
+
+# Daily weighted data ----------------------------------------------------
 year <- 2000
 numberOfCores <- parallel::detectCores()
 
 tic()
-weighted_temp_yearly_dt <-
+weighted_temp_daily_dt <-
   parallel::mclapply(year, weighting, mc.cores = numberOfCores, mc.preschedule = FALSE)
 toc()
 
-weighted_temp_yearly_tbl <-
-  weighted_temp_yearly_dt |>
+weighted_temp_daily_tbl <-
+  weighted_temp_daily_dt |>
   pluck(1) |>
   as_tibble() |>
   arrange(poly_id) |>
   rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
+  mutate(date = as.Date(paste0(year, "-", month, "-", day))) |>
+  dplyr::select(-c(month, day)) |>
+  relocate(date, .before = country) |>
   drop_na()
 
+# Sample chart ------------------------------------------------------------
+weighted_temp_daily_tbl |>
+  filter(country == "ZAF") |>
+  ggplot(aes(x = date, y = temp)) +
+  geom_line() +
+  labs(title = "South Africa",
+       x = "Year",
+       y = "Temperature (Celsius)")
 
 # Export ------------------------------------------------------------------
-weighted_temp_yearly_tbl |>
-  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_yearly_", year, ".rds")))
+weighted_temp_daily_tbl  %>%
+  write_rds(here::here("Outputs", "Temperature", paste("pop_weighted_temp_day_", year, ".rds")))
