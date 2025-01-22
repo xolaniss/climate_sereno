@@ -88,11 +88,22 @@ weighting <- function(year){
       daily_agg = "none",
       time_agg = "day",
       time_interval = '1 day',
-      start_date = "2000-01-01",
+      # start_date = "2000-01-01",
       degree = 2
     )
 
-    return(data)
+ data_tbl <-
+   data |>
+    pluck(1) |>
+    as_tibble() |>
+    # arrange(poly_id) |>
+    # rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
+    # mutate(date = as.Date(paste0(year, "-", month, "-", day))) |>
+    # dplyr::select(-c(month, day)) |>
+    # relocate(date, .before = country) |>
+    drop_na()
+
+    return(data_tbl)
   gc()
 }
 
@@ -113,8 +124,18 @@ population_weights <- secondary_weights(
 
 
 # Daily weighted data ----------------------------------------------------
-year <- 2000
+# args <- commandArgs(trailingOnly = TRUE)
+# year <- as.numeric(args[1])
+# year <- 2001
 numberOfCores <- parallel::detectCores()
+
+tic()
+weighted_temp_daily_list <- list()
+
+for (year in 2000:2001){
+  weighted_temp_daily_list[[year]] <- weighting(year)
+}
+toc()
 
 tic()
 weighted_temp_daily_dt <-

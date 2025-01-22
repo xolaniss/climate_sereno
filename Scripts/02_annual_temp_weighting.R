@@ -59,7 +59,7 @@ mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
 weighting <- function(year){
   # Import
-  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("2m_temp_day_", year, ".nc")))
+  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("2m_temp_year_", year, ".nc")))
 
   # SHP file
   world_shp <- st_read(
@@ -87,8 +87,6 @@ weighting <- function(year){
       overlay_weights = country_weights,
       daily_agg = "none",
       time_agg = "year",
-      time_interval = '1 day',
-      start_date = "2000-01-01",
       degree = 2
     )
 
@@ -112,7 +110,7 @@ population_weights <- secondary_weights(
 )
 
 # Yearly weighted data ----------------------------------------------------
-year <- 2000
+year <- 1940:2023
 numberOfCores <- parallel::detectCores()
 
 tic()
@@ -122,13 +120,28 @@ toc()
 
 weighted_temp_yearly_tbl <-
   weighted_temp_yearly_dt |>
-  pluck(1) |>
+  set_names(year) %>%
+  rbindlist(idcol = "year") |>
+  dplyr::select(-2) |>
+  mutate(year = as.numeric(year)) |>
   as_tibble() |>
   arrange(poly_id) |>
   rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
   drop_na()
 
 
+# Sample graph ------------------------------------------------------------
+weighted_temp_yearly_tbl %>%
+  filter(country == "ZAF") %>%
+  ggplot(aes(year, temp)) +
+  geom_line() +
+  labs(title = "Yearly weighted temperature for South Africa",
+       x = "Year",
+       y = "Temperature (Celsius)") +
+  theme_minimal()
+
+
+
 # Export ------------------------------------------------------------------
 weighted_temp_yearly_tbl |>
-  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_yearly_", year, ".rds")))
+  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_yearly", ".rds")))
