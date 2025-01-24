@@ -1,5 +1,4 @@
-# Purpose -----------------------------------------------------------------
-# Calculating yearly weighted temperature data - Xolani Sibande January 2025
+# Description
 
 # Preliminaries -----------------------------------------------------------
 # core
@@ -59,7 +58,7 @@ mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
 weighting <- function(year) {
   # Import
-  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("2m_temp_day_", year, ".nc")))
+  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("precipitation_day_", year, ".nc")))
 
   # SHP file
   world_shp <- st_read(
@@ -92,18 +91,18 @@ weighting <- function(year) {
       degree = 2
     )
 
- data_tbl <-
-   data |>
+  data_tbl <-
+    data |>
     as_tibble() |>
     arrange(poly_id) |>
-    rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
+    rename(country = poly_id, precip = order_1 , precip2 = order_2) |>
     mutate(date = as.Date(paste0(year, "-", month, "-", day))) |>
     dplyr::select(-c(month, day)) |>
     relocate(date, .before = country) |>
     drop_na()
 
-   data_tbl |>
-     write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_day_", year, ".rds")))
+  data_tbl |>
+    write_rds(here::here("Outputs", "Precipitation", paste0("pop_weighted_precip_day_", year, ".rds")))
   gc()
 }
 
@@ -124,15 +123,15 @@ population_weights <- secondary_weights(
 
 
 # Daily weighted temps ----------------------------------------------------
-tic()
-weighting(1980)
-toc()
+# tic()
+# weighting(1980)
+# toc()
 
 tic()
-for (year in 2018:2019) {
-   tryCatch({
-     weighting(year)
-   }, error = function(e) {})
+for (year in 1990:1999) {
+  tryCatch({
+    weighting(year)
+  }, error = function(e) {})
 }
 toc()
 
@@ -153,18 +152,16 @@ daily_weighted_temp_tbl <-
   bind_rows(.id = "year")
 
 daily_weighted_temp_gg <-
-  daily_weighted_temp_tbl |>
+  daily_weighted_precip_tbl |>
   filter(country == "USA", year == 2000) |>
-  ggplot(aes(date, temp)) +
+  ggplot(aes(date, precip)) +
   geom_line() +
-  labs(title = "Daily weighted temperature",
+  labs(title = "Daily weighted precip",
        x = "Date",
-       y = "Temperature (Celsius)") +
+       y = "Precipitation") +
   theme_minimal()
 
-daily_weighted_temp_gg
+daily_weighted_precip_gg
 # Export ------------------------------------------------------------------
-daily_weighted_temp_tbl |>
-  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_day", ".rds")))
-
-
+daily_weighted_precip_tbl |>
+  write_rds(here::here("Outputs", "Precipitation", paste0("pop_weighted_precip_day", ".rds")))
