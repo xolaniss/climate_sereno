@@ -57,9 +57,9 @@ library(doFuture)
 
 mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
-weighting <- function(year) {
+weighting_temp <- function(year) {
   # Import
-  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("2m_temp_day_", year, ".nc")))
+  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Temperature", paste0("2m_temp_day_", year, ".nc")))
 
   # SHP file
   world_shp <- st_read(
@@ -125,46 +125,17 @@ population_weights <- secondary_weights(
 
 # Daily weighted temps ----------------------------------------------------
 tic()
-weighting(1980)
+weighting_temp(1946)
 toc()
 
 tic()
 for (year in 2018:2019) {
    tryCatch({
-     weighting(year)
+     weighting_temp(year)
    }, error = function(e) {})
 }
 toc()
 
 
-# Aggregation --------------------------------------------------
-path_list <- list.files(here::here("Outputs", "Temperature"),
-                        full.names = TRUE,
-                        pattern = "pop_weighted_temp_day_")
-list_names <- path_list |>
-  map(~ str_extract(.x, "[0-9]{4}")) |>
-  map(~ as.numeric(.x)) |>
-  unlist()
-
-daily_weighted_temp_tbl <-
-  path_list |>
-  set_names(list_names) |>
-  map(~ read_rds(.x)) |>
-  bind_rows(.id = "year")
-
-daily_weighted_temp_gg <-
-  daily_weighted_temp_tbl |>
-  filter(country == "USA", year == 2000) |>
-  ggplot(aes(date, temp)) +
-  geom_line() +
-  labs(title = "Daily weighted temperature",
-       x = "Date",
-       y = "Temperature (Celsius)") +
-  theme_minimal()
-
-daily_weighted_temp_gg
-# Export ------------------------------------------------------------------
-daily_weighted_temp_tbl |>
-  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_day", ".rds")))
 
 
