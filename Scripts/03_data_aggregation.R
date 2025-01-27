@@ -80,7 +80,7 @@ daily_weighted_precip_tbl <-
 
 daily_weighted_precip_gg <-
   daily_weighted_precip_tbl |>
-  filter(country == "USA",  year > 1960) |>
+  filter(country == "UKR") |>
 ggplot(aes(date, precip)) +
   geom_line() +
   labs(title = "Daily weighted precip",
@@ -89,6 +89,10 @@ ggplot(aes(date, precip)) +
   theme_minimal()
 
 daily_weighted_precip_gg
+
+# EDA ---------------------------------------------------------------------
+daily_weighted_temp_tbl |> skim()
+daily_weighted_precip_tbl |> skim()
 
 # Export ------------------------------------------------------------------
 daily_weighted_temp_tbl |>
