@@ -57,7 +57,8 @@ yearly_temp_tbl |>
   geom_line() +
   labs(title = "Yearly weighted temperature",
        x = "Year",
-       y = "Temperature (Celsius)")
+       y = "Temperature (Celsius)")+
+  theme_minimal()
 
 # Precipitation ---------------------------------------------------------------
 yearly_precip_tbl <-
@@ -75,7 +76,8 @@ yearly_precip_tbl |>
   geom_line() +
   labs(title = "Yearly weighted precipitation",
        x = "Year",
-       y = "Precipitation (mm)")
+       y = "Precipitation (mm)") +
+  theme_minimal()
 
 
 # Export ------------------------------------------------------------------
