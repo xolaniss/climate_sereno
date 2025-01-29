@@ -42,6 +42,27 @@ daily_weighted_temp_tbl <- read_rds(here("Outputs", "Temperature", "pop_weighted
 daily_weighted_precip_tbl <- read_rds(here("Outputs", "Precipitation", "pop_weighted_precip_day.rds"))
 
 # Temperature ---------------------------------------------------------------
+monthly_temp_tbl <-
+  daily_weighted_temp_tbl |>
+  dplyr::select(-year) |>
+  mutate(year = lubridate::year(date),
+         month = lubridate::month(date, label = TRUE, abbr = TRUE)) |>
+  group_by(country, year, month) |>
+  summarise(temp = mean(temp, na.rm = TRUE),
+            temp2 = mean(temp2, na.rm = TRUE),
+            .groups = "drop") |>
+  mutate(date = as.Date(paste0(year, "-", month, "-01"), format = "%Y-%b-%d")) |>
+  relocate(date, .before = year)
+
+monthly_temp_tbl |>
+  filter(country == "ZAF") |>
+  ggplot(aes(date, temp)) +
+  geom_line() +
+  labs(title = "Monthly weighted temperature",
+       x = "Month",
+       y = "Temperature (Celsius)") +
+  theme_minimal()
+
 yearly_temp_tbl <-
   daily_weighted_temp_tbl |>
   dplyr::select(-year) |>
@@ -51,8 +72,9 @@ yearly_temp_tbl <-
             temp2 = mean(temp2, na.rm = TRUE),
             .groups = "drop")
 
+
 yearly_temp_tbl |>
-  filter(country == "CHN") |>
+  filter(country == "ZAF") |>
   ggplot(aes(year, temp)) +
   geom_line() +
   labs(title = "Yearly weighted temperature",
@@ -61,6 +83,28 @@ yearly_temp_tbl |>
   theme_minimal()
 
 # Precipitation ---------------------------------------------------------------
+monthly_precip_tbl <-
+  daily_weighted_precip_tbl |>
+  dplyr::select(-year) |>
+  mutate(year = lubridate::year(date),
+         month = lubridate::month(date, label = TRUE, abbr = TRUE)) |>
+  group_by(country, year, month) |>
+  summarise(precip = sum(precip, na.rm = TRUE),
+            precip2 = sum(precip2, na.rm = TRUE),
+            .groups = "drop") |>
+  mutate(date = as.Date(paste0(year, "-", month, "-01"), format = "%Y-%b-%d")) |>
+  relocate(date, .before = year)
+
+monthly_precip_tbl |>
+  filter(country == "ZAF") |>
+  ggplot(aes(date, precip)) +
+  geom_line() +
+  labs(title = "Monthly weighted precipitation",
+       x = "Month",
+       y = "Precipitation (mm)") +
+  theme_minimal()
+
+
 yearly_precip_tbl <-
   daily_weighted_precip_tbl |>
   dplyr::select(-year) |>
@@ -70,8 +114,9 @@ yearly_precip_tbl <-
             precip2 = sum(precip2, na.rm = TRUE),
             .groups = "drop")
 
+
 yearly_precip_tbl |>
-  filter(country == "USA") |>
+  filter(country == "ZAF") |>
   ggplot(aes(year, precip)) +
   geom_line() +
   labs(title = "Yearly weighted precipitation",
@@ -80,7 +125,12 @@ yearly_precip_tbl |>
   theme_minimal()
 
 
+
 # Export ------------------------------------------------------------------
+monthly_temp_tbl |>
+  write_rds(here("Outputs", "Temperature", "monthly_temp.rds"))
+monthly_precip_tbl |>
+  write_rds(here("Outputs", "Precipitation", "monthly_precip.rds"))
 yearly_temp_tbl |>
   write_rds(here("Outputs", "Temperature", "yearly_temp.rds"))
 yearly_precip_tbl |>

@@ -52,7 +52,7 @@ daily_weighted_temp_tbl <-
 
 daily_weighted_temp_gg <-
   daily_weighted_temp_tbl |>
-  filter(country == "GBR") |>
+  filter(country == "ZAF", year == 2019) |>
   ggplot(aes(date, temp)) +
   geom_line() +
   labs(title = "Daily weighted temperature",
@@ -80,7 +80,7 @@ daily_weighted_precip_tbl <-
 
 daily_weighted_precip_gg <-
   daily_weighted_precip_tbl |>
-  filter(country == "UKR") |>
+  filter(country == "ZAF") |>
 ggplot(aes(date, precip)) +
   geom_line() +
   labs(title = "Daily weighted precip",
