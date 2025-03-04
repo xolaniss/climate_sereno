@@ -73,8 +73,8 @@ cpi_tbl <-
   map(~rename(.x,  "...1" = 1)) |>
   map(~ clean_cpi_data(.x)) |>
   bind_rows(.id = "category") |>
-  dplyr::select(-x136) # check
-
+  dplyr::select(-x136) |>  # check
+  filter(date >= "2005-05-01")
 cpi_tbl |> glimpse()
 
 # EDA ---------------------------------------------------------------
