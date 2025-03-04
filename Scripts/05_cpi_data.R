@@ -16,6 +16,7 @@ library(pins)
 library(timetk)
 library(uniqtag)
 library(quantmod)
+library(countrycode)
 
 # graphs
 library(PNWColors)
@@ -74,9 +75,19 @@ cpi_tbl <-
   map(~ clean_cpi_data(.x)) |>
   bind_rows(.id = "category") |>
   dplyr::select(-x136) |>  # check
+  pivot_longer(cols = -c(date, category), names_to = "country", values_to = "cpi") |>
+  mutate(country = str_replace(country, "south_korea", "korea"),
+         country = str_replace(country, "lao_pdr", "laos")) |>
+  mutate(country_abs =
+           countrycode::countrycode(country,
+                                    origin = "country.name",
+                                    destination = "iso3c",
+                                    custom_match = c("kosovo" = "XKX"))) |>
   filter(date >= "2005-05-01")
 cpi_tbl |> glimpse()
 
+cpi_tbl |>
+  filter(country_abs == "XKX")
 # EDA ---------------------------------------------------------------
 cpi_tbl |> group_by(category) |> skim()
 
