@@ -1,5 +1,10 @@
 # Description
 # CPI data - Xolani Sibande March 2025
+
+# TO DO -------------------------------------------------------------------
+## calculate seasonal adjusted inflation rate
+## fix 136 issue
+
 # Preliminaries -----------------------------------------------------------
 # core
 library(tidyverse)
@@ -74,7 +79,7 @@ cpi_tbl <-
   map(~rename(.x,  "...1" = 1)) |>
   map(~ clean_cpi_data(.x)) |>
   bind_rows(.id = "category") |>
-  dplyr::select(-x136) |>  # check
+  dplyr::select(-x136) |>  # check Serina to fix this.
   pivot_longer(cols = -c(date, category), names_to = "country", values_to = "cpi") |>
   mutate(country = str_replace(country, "south_korea", "korea"),
          country = str_replace(country, "lao_pdr", "laos")) |>
@@ -83,11 +88,12 @@ cpi_tbl <-
                                     origin = "country.name",
                                     destination = "iso3c",
                                     custom_match = c("kosovo" = "XKX"))) |>
-  filter(date >= "2005-05-01")
+  relocate(date, .before = category) |>
+  relocate(country_abs, .before = country) |>
+  filter(date >= "1980-01-01")
+
 cpi_tbl |> glimpse()
 
-cpi_tbl |>
-  filter(country_abs == "XKX")
 # EDA ---------------------------------------------------------------
 cpi_tbl |> group_by(category) |> skim()
 
