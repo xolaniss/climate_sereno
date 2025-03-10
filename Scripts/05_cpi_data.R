@@ -46,7 +46,7 @@ clean_cpi_data <- function(tbl, column = "x1") {
   tbl |>
     janitor::clean_names(replace = replace_vector) |>
     rename(date = {{ column }}) |>
-    mutate(date = parse_date_time(date, orders = "ym"))
+    mutate(date = parse_date_time(date, orders = c("ym", "ymd")))
 }
 
 # Import -------------------------------------------------------------
@@ -54,32 +54,33 @@ replace_vector <- c("US")
 names(replace_vector) <- c("U.S.")
 
 
-sheet_list <- excel_sheets(here("Data", "CPI_NSA.xlsx"))[1:13]
+sheet_list <- excel_sheets(here("Data", "CPI_NSA_2.xlsx"))
 
 clean_sheet_list <- c(
-  "Headline (NSA)",
-  "Food & Bev (NSA)",
-  "AlcBev (NSA)",
-  "Clothing (NSA)",
-  "Housing (NSA)",
-  "HH Goods (NSA)",
-  "Health (NSA)",
-  "Transport (NSA)",
-  "Communications (NSA)",
-  "Recreation (NSA)",
-  "Education (NSA)",
-  "Hotels (NSA)",
-  "Other (NSA)"
+  "Headline",
+  "Food & Bev",
+  "AlcBev",
+  "Clothing",
+  "Housing",
+  "HH Goods",
+  "Health",
+  "Transport",
+  "Communications",
+  "Recreation",
+  "Education",
+  "Hotels",
+  "Other",
+  "Energy"
 )
 
 cpi_tbl <-
   set_names(sheet_list) |>
-  map(~ read_xlsx(here("Data", "CPI_NSA.xlsx"), sheet = .x, na = "NA")) |>
+  map(~ read_xlsx(here("Data", "CPI_NSA_2.xlsx"), sheet = .x, na = "NA")) |>
   set_names(clean_sheet_list) |>
   map(~rename(.x,  "...1" = 1)) |>
   map(~ clean_cpi_data(.x)) |>
   bind_rows(.id = "category") |>
-  dplyr::select(-x136) |>  # check Serina to fix this.
+  dplyr::select(-x53, -eu_27) |>  # check Serina to fix this.
   pivot_longer(cols = -c(date, category), names_to = "country", values_to = "cpi") |>
   mutate(country = str_replace(country, "south_korea", "korea"),
          country = str_replace(country, "lao_pdr", "laos")) |>
@@ -87,7 +88,7 @@ cpi_tbl <-
            countrycode::countrycode(country,
                                     origin = "country.name",
                                     destination = "iso3c",
-                                    custom_match = c("kosovo" = "XKX"))) |>
+                                    custom_match = c("kosovo" = "XKX" ))) |>
   relocate(date, .before = category) |>
   relocate(country_abs, .before = country) |>
   filter(date >= "1980-01-01")
@@ -95,9 +96,22 @@ cpi_tbl <-
 cpi_tbl |> glimpse()
 
 # EDA ---------------------------------------------------------------
-cpi_tbl |> group_by(category) |> skim()
+cpi_tbl |> group_by(country_abs) |> skim()
 
-# Export ---------------------------------------------------------------
+# Plot ---------------------------------------------------------------
+cpi_tbl |>
+  filter(country_abs %in% c("USA", "ZAF", "BRA", "CHN", "IND", "RUS")) |>
+  ggplot(aes(x = date, y = cpi, color = category)) +
+  geom_line() +
+  labs(title = "CPI categories by country",
+       x = "Date",
+       y = "CPI") +
+  facet_wrap(~country, scales = "free_y") +
+  theme_minimal() +
+  theme(text = element_text(size = 8))
+
+
+j       # Export ---------------------------------------------------------------
 artifacts_cpi <- list (
   cpi_tbl = cpi_tbl
 )
