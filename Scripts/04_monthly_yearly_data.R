@@ -55,7 +55,7 @@ monthly_temp_tbl <-
   relocate(date, .before = year)
 
 monthly_temp_tbl |>
-  filter(country == "ZAF") |>
+  filter(country == "USA") |>
   ggplot(aes(date, temp)) +
   geom_line() +
   labs(title = "Monthly weighted temperature",
@@ -124,6 +124,7 @@ yearly_precip_tbl |>
        y = "Precipitation (mm)") +
   theme_minimal()
 
+yearly_precip_tbl |> tail()
 
 
 # Export ------------------------------------------------------------------
