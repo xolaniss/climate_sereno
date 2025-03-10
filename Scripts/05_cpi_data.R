@@ -108,7 +108,9 @@ cpi_tbl |>
        y = "CPI") +
   facet_wrap(~country, scales = "free_y") +
   theme_minimal() +
-  theme(text = element_text(size = 8))
+  theme(text = element_text(size = 8)) +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = pnw_palette("Sunset2", 14))
 
 
 j       # Export ---------------------------------------------------------------
