@@ -122,6 +122,8 @@ yearly_precip_tbl |>
   labs(title = "Yearly weighted precipitation",
        x = "Year",
        y = "Precipitation (mm)") +
+  # set the y scale in increments of 50
+  scale_y_continuous(breaks = seq(0, 1000, by = 50)) +
   theme_minimal()
 
 yearly_precip_tbl |> tail()
