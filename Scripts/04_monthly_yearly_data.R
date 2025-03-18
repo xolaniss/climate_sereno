@@ -102,6 +102,7 @@ monthly_precip_tbl |>
   labs(title = "Monthly weighted precipitation",
        x = "Month",
        y = "Precipitation (mm)") +
+  scale_y_continuous(breaks = seq(0, 1000, by = 50)) +
   theme_minimal()
 
 
