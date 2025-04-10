@@ -113,7 +113,7 @@ cpi_tbl |>
   scale_color_manual(values = pnw_palette("Sunset2", 14))
 
 
-j       # Export ---------------------------------------------------------------
+# Export ---------------------------------------------------------------
 artifacts_cpi <- list (
   cpi_tbl = cpi_tbl
 )

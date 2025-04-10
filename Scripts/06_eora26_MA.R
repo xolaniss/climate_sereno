@@ -48,7 +48,7 @@ path_list <-
   years |>
   map(
     ~ glue(
-      "/Users/xolanisibande-dev/Papers/climate_sereno/Data/Eora26/moving_averages/MA_{.}.txt"
+      "/Users/xolanisibande/Papers/climate_sereno/Data/Eora26/moving_averages/MA_{.}.txt"
     )
   )
 
@@ -67,10 +67,14 @@ eora_ma_tbl <-
   ) |>
   set_names(years) |>
   bind_rows(.id = "year") |>
-  janitor::clean_names()
-  # pivot_longer(cols = -c(year, country, industry),
-  #            names_to = "sector",
-  #            values_to = "ma")
+  janitor::clean_names() |>
+  pivot_longer(cols = -c(year, country, industry),
+             names_to = "sector",
+             values_to = "ma") |>
+  mutate(sector = str_replace_all(sector, "household_goods","householdgoods" )) |>
+  separate(sector, sep = "_", into = c("source_country", "sector")) |>
+  mutate(source_country  = str_to_upper(source_country))
+
 toc()
 plan(sequential)
 
