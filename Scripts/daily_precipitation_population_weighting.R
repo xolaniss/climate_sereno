@@ -58,7 +58,8 @@ mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
 weighting_precip <- function(year) {
   # Import
-  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/precipitation", paste0("precipitation_day_", year, ".nc")))
+  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/precipitation",
+                              paste0("precipitation_day_", year, ".nc")))
 
   # SHP file
   world_shp <- st_read(
@@ -102,7 +103,8 @@ weighting_precip <- function(year) {
     drop_na()
 
   data_tbl |>
-    write_rds(here::here("Outputs", "Precipitation", paste0("pop_weighted_precip_day_", year, ".rds")))
+    write_rds(here::here("Outputs", "Precipitation",
+                         paste0("pop_weighted_precip_day_", year, ".rds")))
   gc()
 }
 

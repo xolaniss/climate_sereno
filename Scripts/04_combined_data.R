@@ -63,11 +63,14 @@ cpi_tbl <- read_rds(here("Outputs", "artifacts_cpi.rds")) |>
 
 cpi_industry_tbl <-
   cpi_tbl |>
-  filter(category != "headline")
+  filter(category != "headline") |>
+  rename(cpi_industry = cpi)
 
 cpi_headline_tbl <-
   cpi_tbl |>
-  filter(category == "headline")
+  filter(category == "headline") |>
+  rename(cpi_headline = cpi)
+
 
 ## Climate data ---------------------------------------------------------------
 precipitation_tbl <-
@@ -89,13 +92,16 @@ temp_tbl <-
 combined_data_tbl <-
   eora_ma_tbl |>
   left_join(precipitation_tbl, by = join_by(date == date,
-                                            row_country == country)) |>
+                                            column_country == country)) |>
   left_join(temp_tbl, by = join_by(date == date,
-                                   row_country == country)) |>
+                                   column_country == country)) |>
   left_join(cpi_industry_tbl, by = join_by(date == date,
                                           column_country == country,
                                           column_industry == category
-                                          ))
+                                          )) |>
+  left_join(cpi_headline_tbl, by = join_by(date == date,
+                                           column_country == country,
+                                           column_industry == category)) # check matching criteria
 
 # EDA ---------------------------------------------------------------
 combined_data_tbl |> skim()
@@ -106,4 +112,5 @@ artifacts_combined_data <- list (
   combined_data_tbl = combined_data_tbl
 )
 
-write_rds(artifacts_combined_data, file = here("Outputs", "artifacts_combined_data.rds"))
+write_rds(artifacts_combined_data, file = here("Outputs",
+                                               "artifacts_combined_data.rds"))

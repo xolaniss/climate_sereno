@@ -1,5 +1,5 @@
-# Purpose -----------------------------------------------------------------
-# Calculating yearly weighted temperature data - Xolani Sibande January 2025
+# Description
+# Agriciultural land temp weighting - Xolani Sibande April 2025
 
 # Preliminaries -----------------------------------------------------------
 # core
@@ -54,12 +54,14 @@ library(future.apply)
 library(future)
 library(tictoc)
 library(doFuture)
+library(parallel)
 
 mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
-weighting <- function(year){
+weighting_temp <- function(year) {
   # Import
-  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Data", paste0("2m_temp_year_", year, ".nc")))
+  data_sr <- stack(here::here("/Users/xolanisibande-dev/Desktop/Temperature",
+                              paste0("2m_temp_day_", year, ".nc")))
 
   # SHP file
   world_shp <- st_read(
@@ -75,7 +77,7 @@ weighting <- function(year){
     polygons = world_shp,
     polygon_id_col = "iso3",
     grid = era5_grid,
-    secondary_weights = population_weights
+    secondary_weights = land_weights
   )
 
   print(country_weights)
@@ -86,62 +88,57 @@ weighting <- function(year){
       data = data_sr - 273.15,
       overlay_weights = country_weights,
       daily_agg = "none",
-      time_agg = "year",
+      time_agg = "day",
+      time_interval = '1 day',
+      start_date = paste0(year, "-01-01"),
       degree = 2
     )
 
-  return(data)
+  # data_tbl <-
+    data |>
+    as_tibble() |>
+    arrange(poly_id) |>
+    rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
+    mutate(date = as.Date(paste0(year, "-", month, "-", day))) |>
+    dplyr::select(-c(month, day)) |>
+    relocate(date, .before = country) |>
+    drop_na()
+
+  data_tbl |>
+    write_rds(here::here("Outputs", "Temperature",
+                         paste0("land_weighted_temp_day_", year, ".rds")))
   gc()
 }
 
 # Population Weights -----------------------------------------------------------
-landscan <- rast(
+global_land <- rast(
   here::here(
     "Data",
-    "landscan-global-2000-assets",
-    "landscan-global-2000.tif"
+    "gl_cropland_geotif",
+    "cropland.tif"
   )
 )
 
-population_weights <- secondary_weights(
-  secondary_raster = landscan,
+land_weights <- secondary_weights(
+  secondary_raster = global_land,
   grid = era5_grid,
   extent = "full"
 )
 
-# Yearly weighted data ----------------------------------------------------
-year <- 1940:2023
-numberOfCores <- parallel::detectCores()
+
+# Daily weighted temps ----------------------------------------------------
+# tic()
+# weighting_temp(1990)
+# toc()
 
 tic()
-weighted_temp_yearly_dt <-
-  parallel::mclapply(year, weighting, mc.cores = numberOfCores, mc.preschedule = FALSE)
+for (year in 1991:2017) {
+  tryCatch({
+    weighting_temp(year)
+  }, error = function(e) {})
+}
 toc()
 
-weighted_temp_yearly_tbl <-
-  weighted_temp_yearly_dt |>
-  set_names(year) %>%
-  rbindlist(idcol = "year") |>
-  dplyr::select(-2) |>
-  mutate(year = as.numeric(year)) |>
-  as_tibble() |>
-  arrange(poly_id) |>
-  rename(country = poly_id, temp = order_1 , temp2 = order_2) |>
-  drop_na()
-
-
-# Sample graph ------------------------------------------------------------
-weighted_temp_yearly_tbl %>%
-  filter(country == "ZAF") %>%
-  ggplot(aes(year, temp)) +
-  geom_line() +
-  labs(title = "Yearly weighted temperature for South Africa",
-       x = "Year",
-       y = "Temperature (Celsius)") +
-  theme_minimal()
 
 
 
-# Export ------------------------------------------------------------------
-weighted_temp_yearly_tbl |>
-  write_rds(here::here("Outputs", "Temperature", paste0("pop_weighted_temp_yearly", ".rds")))

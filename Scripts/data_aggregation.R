@@ -34,7 +34,7 @@ library(urca)
 library(mFilter)
 library(car)
 
-# Temperature Aggregation --------------------------------------------------
+# Temperature Aggregation (Population)--------------------------------------------------
 path_list <- list.files(here::here("Outputs", "Temperature"),
                         full.names = TRUE,
                         pattern = "pop_weighted_temp_day_")
@@ -43,15 +43,15 @@ list_names <- path_list |>
   map(~ as.numeric(.x)) |>
   unlist()
 
-daily_weighted_temp_tbl <-
+daily_pop_weighted_temp_tbl <-
   path_list |>
   set_names(list_names) |>
   map(~ read_rds(.x)) |>
   bind_rows(.id = "year")
 
 
-daily_weighted_temp_gg <-
-  daily_weighted_temp_tbl |>
+daily_pop_weighted_temp_gg <-
+  daily_pop_weighted_temp_tbl |>
   filter(country == "ZAF") |>
   ggplot(aes(date, temp)) +
   geom_line() +
@@ -60,7 +60,37 @@ daily_weighted_temp_gg <-
        y = "Temperature (Celsius)") +
   theme_minimal()
 
-daily_weighted_temp_gg
+daily_pop_weighted_temp_gg
+
+
+# Temperature Aggregation (land)--------------------------------------------------
+path_list <- list.files(here::here("Outputs", "Temperature"),
+                        full.names = TRUE,
+                        pattern = "land_weighted_temp_day_")
+list_names <- path_list |>
+  map(~ str_extract(.x, "[0-9]{4}")) |>
+  map(~ as.numeric(.x)) |>
+  unlist()
+
+daily_land_weighted_temp_tbl <-
+  path_list |>
+  set_names(list_names) |>
+  map(~ read_rds(.x)) |>
+  bind_rows(.id = "year")
+
+
+daily_land_weighted_temp_gg <-
+  daily_land_weighted_temp_tbl |>
+  filter(country == "CAF" & year == "2003") |>
+  ggplot(aes(date, temp)) +
+  geom_line() +
+  labs(title = "Daily weighted temperature",
+       x = "Date",
+       y = "Temperature (Celsius)") +
+  theme_minimal()
+
+daily_land_weighted_temp_gg
+
 
 
 # Precipitation Aggregation --------------------------------------------------
