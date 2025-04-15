@@ -77,10 +77,18 @@ climate_data_clean_tbl <-
 
 # Climate shocks ---------------------------------------------------------------
 climate_shocks_tbl <- climate_data_clean_tbl  |>
+  country_extreme_function(land_weighted_temp, 0.90) |>
+  country_extreme_function(population_weighted_temp, 0.90) |>
+  country_extreme_function(land_weighted_precip, 0.90) |>
+  country_extreme_function(population_weighted_precip, 0.90) |>
   country_extreme_function(land_weighted_temp, 0.95) |>
   country_extreme_function(population_weighted_temp, 0.95) |>
   country_extreme_function(land_weighted_precip, 0.95) |>
-  country_extreme_function(population_weighted_precip, 0.95)
+  country_extreme_function(population_weighted_precip, 0.95) |>
+  country_extreme_function(land_weighted_temp, 0.99) |>
+  country_extreme_function(population_weighted_temp, 0.99) |>
+  country_extreme_function(land_weighted_precip, 0.99) |>
+  country_extreme_function(population_weighted_precip, 0.99)
 
 glimpse(climate_shocks_tbl)
 
@@ -90,12 +98,12 @@ glimpse(climate_shocks_tbl)
 climate_shocks_tbl |>
   filter(country %in% c("CAN", "ZAF", "USA", "ABW")) |>
   country_extreme_gg_function(variable = "land_weighted_temp",
-                              extreme_variable = land_weighted_temp_extreme_p_0.95)
+                              extreme_variable = land_weighted_temp_extreme_p_0.99)
 
 climate_shocks_tbl |>
   filter(country %in% c("CAN", "ZAF", "USA", "ABW")) |>
   country_extreme_gg_function(variable = "land_weighted_temp",
-                              extreme_variable = land_weighted_temp_extreme_p_0.05)
+                              extreme_variable = land_weighted_temp_extreme_p_0.01)
 climate_shocks_tbl |>
   filter(country %in% c("CAN", "ZAF", "USA", "ABW")) |>
   country_extreme_gg_function(variable = "population_weighted_temp",
