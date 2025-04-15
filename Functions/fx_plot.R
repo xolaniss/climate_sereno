@@ -1,13 +1,16 @@
 fx_plot <-
-function (data, plotname = " ", 
-          variables_color = 12, 
-          scale = "free", 
+function (data,
+          date = "date",
+          value,
+          col,
+          facet_var,
+          plotname = " ",
+          variables_color = 4,
+          scale = "free",
           ncol = NULL) {
-  ggplot(data,
-    aes(x = Date, y = Value, col = Series)
-  ) +
-    geom_line() +
-    facet_wrap (. ~ Series, scale = scale, ncol = ncol) +
+  ggplot(data, aes(x = !!sym(date), y = !!sym(value), col = !!sym(col))) +
+    geom_col(width = 40) +
+    facet_wrap (as.formula(paste0(".~", facet_var)), scale = scale, ncol = ncol) +
     theme_bw() +
     theme(
       legend.position = "none",
@@ -27,8 +30,8 @@ function (data, plotname = " ",
 
 
 pivot <- function(data){
-  result <- 
-  pivot_longer(data,-Date, names_to = "Series", values_to = "Value") 
+  result <-
+  pivot_longer(data,-Date, names_to = "Series", values_to = "Value")
   result
 }
 

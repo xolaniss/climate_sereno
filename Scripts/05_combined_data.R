@@ -73,28 +73,22 @@ cpi_headline_tbl <-
 
 
 ## Climate data ---------------------------------------------------------------
-precipitation_tbl <-
-  read_rds(here("Outputs", "Precipitation", "monthly_precip.rds")) |>
-  relocate(year, .before = country) |>
-  dplyr::select(-year, -month) |>
-  filter(date >= "1990-01-01"  & date <= "2017-12-01") |>
-  relocate(country, .after = date)
+climate_data_tbl <- read_rds(here("Outputs", "artifacts_climate_data.rds")) |>
+  pluck(5)
 
-temp_tbl <-
-  read_rds(here("Outputs", "Temperature", "monthly_temp.rds")) |>
-  relocate(year, .before = country) |>
-  dplyr::select(-year, -month) |>
-  filter(date >= "1990-01-01" & date <= "2017-12-01") |>
-  relocate(country, .after = date)
+
+# EDA -------------------------------------------------------------------
+climate_data_tbl |> skim()
+eora_ma_tbl |> skim()
+cpi_headline_tbl |> skim()
+cpi_industry_tbl |> skim()
 
 
 # Combining data ---------------------------------------------------------------
 combined_data_tbl <-
   eora_ma_tbl |>
-  left_join(precipitation_tbl, by = join_by(date == date,
+  left_join(climate_data_tbl, by = join_by(date == date,
                                             column_country == country)) |>
-  left_join(temp_tbl, by = join_by(date == date,
-                                   column_country == country)) |>
   left_join(cpi_industry_tbl, by = join_by(date == date,
                                           column_country == country,
                                           column_industry == category
@@ -103,8 +97,6 @@ combined_data_tbl <-
                                            column_country == country,
                                            column_industry == category)) # check matching criteria
 
-# EDA ---------------------------------------------------------------
-combined_data_tbl |> skim()
 
 
 # Export ---------------------------------------------------------------
