@@ -1,10 +1,6 @@
 # Description
 # CPI data - Xolani Sibande March 2025
 
-# TO DO -------------------------------------------------------------------
-## calculate seasonal adjusted inflation rate
-## fix 136 issue
-
 # Preliminaries -----------------------------------------------------------
 # core
 library(tidyverse)
@@ -91,16 +87,24 @@ cpi_tbl <-
                                     custom_match = c("kosovo" = "XKX" ))) |>
   relocate(date, .before = category) |>
   relocate(country_abs, .before = country) |>
-  filter(date >= "1980-01-01")
+    filter(date >= "1990-01-01" & date <= "2017-12-31") |>
+  dplyr::select(-country) |>
+  rename(country = country_abs) |>
+  mutate(category = str_to_lower(category)) |>
+  mutate(category = str_replace_all(category, "hh goods", "household_goods")) |>
+  mutate(category = str_replace_all(category, "food & bev", "agrifood")) |>
+  filter(category != "other") |>
+  filter(category != "alcbev") |>
+  filter(category != "recreation")
 
 cpi_tbl |> glimpse()
 
 # EDA ---------------------------------------------------------------
-cpi_tbl |> group_by(country_abs) |> skim()
+cpi_tbl |> group_by(country) |> skim()
 
 # Plot ---------------------------------------------------------------
 cpi_tbl |>
-  filter(country_abs %in% c("USA", "ZAF", "BRA", "CHN", "IND", "RUS")) |>
+  filter(country %in% c("USA", "ZAF", "BRA", "CHN", "IND", "RUS")) |>
   ggplot(aes(x = date, y = cpi, color = category)) +
   geom_line() +
   labs(title = "CPI categories by country",

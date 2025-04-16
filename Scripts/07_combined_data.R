@@ -97,8 +97,6 @@ combined_data_tbl <-
                                            column_country == country,
                                            column_industry == category)) # check matching criteria
 
-
-
 # Export ---------------------------------------------------------------
 artifacts_combined_data <- list (
   combined_data_tbl = combined_data_tbl
