@@ -56,9 +56,11 @@ inflation_rate_tbl <-
   group_by(country, category) |>
   mutate(
     inflation_rate = 400*(log(cpi+ lag(cpi, 1) + lag(cpi, 2)) -
-                          log(lag(cpi, 3) + lag(cpi, 4) + lag(cpi, 5))) # annualized and seasonal adjusted
+                          log(lag(cpi, 3) + lag(cpi, 4) + lag(cpi, 5))
+                          ) # annualized and seasonal adjusted
   ) |>
-  ungroup()
+  ungroup() |>
+  dplyr::select(-cpi)
 
 inflation_ratecpi_tbl |>
   skim()
@@ -66,7 +68,7 @@ inflation_ratecpi_tbl |>
 
 # Visualisation ----------------------------------------------------------
 inflation_rate_tbl|>
-  filter(country == "CHN") |>
+  filter(country == "GBR") |>
   ggplot(aes(x = date, y = inflation_rate, col = category)) +
   geom_line() +
   labs(
@@ -79,10 +81,10 @@ inflation_rate_tbl|>
   theme(legend.position = "none") +
   facet_wrap(~category, ncol = 3, scales = "free_y")
 
-
 # Export ---------------------------------------------------------------
 artifacts_inflation_rate <- list (
   inflation_rate_tbl = inflation_rate_tbl
 )
 
-write_rds(artifacts_inflation_rate, file = here("Outputs", "artifacts_inflation_rate.rds"))
+write_rds(artifacts_inflation_rate, file = here("Outputs",
+                                                "artifacts_inflation_rate.rds"))

@@ -95,7 +95,8 @@ cpi_tbl <-
   mutate(category = str_replace_all(category, "food & bev", "agrifood")) |>
   filter(category != "other") |>
   filter(category != "alcbev") |>
-  filter(category != "recreation")
+  filter(category != "recreation") |>
+  arrange(country)
 
 cpi_tbl |> glimpse()
 
