@@ -1,6 +1,5 @@
 # Description
 # Production network - Xolani Sibande April 2025
-
 # Preliminaries -----------------------------------------------------------
 # core
 library(tidyverse)
@@ -44,6 +43,7 @@ mem.maxVSize(100000)
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
+<<<<<<< HEAD
 # Import -------------------------------------------------------------
 eora_ma_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
   pluck(1) |>
@@ -65,6 +65,26 @@ eora_ma_shares_tbl <- eora_ma_tbl |>
     shares = ma / row_sales
   ) |>
   ungroup()
+=======
+# Import and clean -------------------------------------------------------------
+eora_ma_yearly_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
+  pluck(1)
+
+# Calculating leontif_inverse matrix --------------------------------
+X <- eora_ma_yearly_tbl[2:10584, 4:1893] |>
+  as.matrix() # select only the columns with values
+
+d <- eora_ma_yearly_tbl |>
+  mutate(final_demand = rowSums(across(c(4:1893)))) |>
+  dplyr::select(final_demand) |>
+  as.matrix()
+
+A <- input_requirement(X, d) # calculate the leontif inverse matrix
+L <- leontief_inverse(A) # calculate the leontif inverse matrix
+
+# TODO
+# need a square matrix to calculate the leontif inverse
+>>>>>>> 8244e2c46637506a7cba0d42abf75182b8eacc77
 
 eora_ma_shares_tbl |>
   filter(column_country == "CHN" &
@@ -81,8 +101,9 @@ eora_ma_shares_tbl |>
   theme_minimal() +
   theme(legend.position = "none")
 # Export ---------------------------------------------------------------
-artifacts_ <- list (
+artifacts_production_network <- list (
 
 )
 
-write_rds(artifacts_, file = here("Outputs", "artifacts_.rds"))
+write_rds(artifacts_production_network, file = here("Outputs",
+                                                    "artifacts_production_network.rds"))
