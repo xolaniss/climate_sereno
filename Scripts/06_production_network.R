@@ -44,22 +44,42 @@ mem.maxVSize(100000)
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
-# Import and clean -------------------------------------------------------------
+# Import -------------------------------------------------------------
 eora_ma_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
-  pluck(1)
-
-# Cleaning -----------------------------------------------------------------
-
-
-# Transformations --------------------------------------------------------
+  pluck(1) |>
+  relocate(column_country,.after = row_country) |>
+  relocate(column_industry, .after = row_industry)
 
 
 # EDA ---------------------------------------------------------------
+eora_ma_tbl |> group_by(row_country) |> skim()
 
+eora_ma_shares_tbl <- eora_ma_tbl |>
+  group_by(date, row_country) |>
+  mutate(
+    row_sales = sum(ma)
+  ) |>
+  ungroup() |>
+  group_by(date, column_industry) |>
+  mutate(
+    shares = ma / row_sales
+  ) |>
+  ungroup()
 
-# Graphing ---------------------------------------------------------------
-
-
+eora_ma_shares_tbl |>
+  filter(column_country == "CHN" &
+           column_industry == "health" &
+           row_industry == "downstream") |>
+  ggplot(aes(x = date, y = shares, col = row_country)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Agrifood share of total sales in South Africa",
+    x = "Date",
+    y = "Share"
+  ) +
+  facet_wrap(~ row_country) +
+  theme_minimal() +
+  theme(legend.position = "none")
 # Export ---------------------------------------------------------------
 artifacts_ <- list (
 
