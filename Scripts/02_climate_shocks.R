@@ -110,7 +110,8 @@ climate_data_clean_tbl <-
   ) |>
   mutate(year = year(date)) |>
   drop_na() |>
-  ungroup()
+  ungroup() |>
+  filter(date>= "2000-01-01")
 
 # Climate shocks ---------------------------------------------------------------
 climate_shocks_tbl <- climate_data_clean_tbl  |>

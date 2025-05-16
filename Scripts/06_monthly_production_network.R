@@ -3,6 +3,7 @@
 # Preliminaries -----------------------------------------------------------
 # core
 library(tidyverse)
+library(dtplyr)
 library(readr)
 library(readxl)
 library(here)
@@ -95,17 +96,17 @@ eora_ma_monthly_tbl <-
 ## Pivoting longer using dt -------------------------------------------------------
 tic()
 eora_ma_monthly_long_tbl <-
-  as.data.table(eora_ma_monthly_tbl) |>
-  dt_pivot_longer(
+  eora_ma_monthly_tbl |>
+  as.data.table() |>
+  pivot_longer(
     cols = -c(date, row_country, row_industry),
     names_to = "sector",
     values_to = "ma"
   ) |>
-  dt_separate(sector,
+  separate(sector,
               sep = ".",
               into = c("column_country", "column_industry")
   ) |>
-  as_tibble() |>
   mutate(column_industry  = str_to_lower(column_industry))
 toc()
 
