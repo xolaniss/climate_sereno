@@ -16,6 +16,8 @@ library(pins)
 library(timetk)
 library(uniqtag)
 library(quantmod)
+library(data.table)
+library(tidyfast)
 
 # graphs
 library(PNWColors)
@@ -34,6 +36,8 @@ library(urca)
 library(mFilter)
 library(car)
 
+library(tictoc)
+
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
@@ -49,7 +53,7 @@ expanded_dates_tbl <- rep(seq(
 ), 189) |>
   as_tibble() # expanded dates for monthly
 
-country_names_vec <- eora_ma_yearly_tbl |> distinct(country)
+country_names_vec <- eora_ma_tbl |> distinct(country)
 country_names_tbl <- tibble("country" = rep(country_names_vec, times = 336)) |>
   unnest(country) |>
   arrange(country) |>
@@ -61,7 +65,7 @@ country_names_tbl <- tibble("country" = rep(country_names_vec, times = 336)) |>
 eora_ma_monthly_agri_food_tbl <-
   country_names_tbl |>
   left_join(
-    eora_ma_yearly_tbl |>
+    eora_ma_tbl |>
       filter(industry == "agrifood"),
     by = join_by(date == year, country == country)
   ) |>
@@ -72,7 +76,7 @@ eora_ma_monthly_agri_food_tbl <-
 eora_ma_monthly_downstream_tbl <-
   country_names_tbl |>
   left_join(
-    eora_ma_yearly_tbl |>
+    eora_ma_tbl |>
       filter(industry == "downstream"),
     by = join_by(date == year, country == country)
   ) |>
