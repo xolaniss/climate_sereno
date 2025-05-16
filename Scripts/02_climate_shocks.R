@@ -84,17 +84,13 @@ climate_data_tbl |> skim()
 # Calculating anomalies ---------------------------------------------------------------
 rolling_mean = slidify(
   .f = mean,
-  .period = 24,
+  .period = 12,
   .align = "right",
-  .partial = FALSE
+  .partial = TRUE
 )
 
 climate_data_clean_tbl <-
   climate_data_tbl |>
-  filter(!is.na(land_weighted_temp)) |>
-  filter(!is.na(population_weighted_temp)) |>
-  filter(!is.na(land_weighted_precip)) |>
-  filter(!is.na(population_weighted_precip)) |>
   group_by(country) |>
   mutate(
     land_weighted_temp_mean = rolling_mean(land_weighted_temp),
@@ -113,6 +109,7 @@ climate_data_clean_tbl <-
     population_weighted_precip_anomaly = population_weighted_precip - population_weighted_precip_mean
   ) |>
   mutate(year = year(date)) |>
+  drop_na() |>
   ungroup()
 
 # Climate shocks ---------------------------------------------------------------
