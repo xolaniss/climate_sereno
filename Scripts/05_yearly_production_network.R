@@ -83,23 +83,25 @@ eora_ma_yearly_shares_list <-
 toc()
 
 tic()
-eora_ma_yearly_average_shares_list <-
+eora_ma_average_shares_list <-
   eora_ma_yearly_shares_list |>
-  accumulate(
+  reduce(
     .init = eora_ma_yearly_shares_list[[1]],
     .f = function(x, y) {
-      (x + y) / 2
+      (x + y)
     } |>
       as_tibble()
-  )
+  ) |>
+  mutate(across(everything(), ~ .x / length(eora_ma_yearly_shares_list))) |>
+  mutate(across(everything(), ~ round(.x, 3)))
 toc()
 
-eora_ma_yearly_average_shares_list
+eora_ma_average_shares_list
 
 
 # Export ---------------------------------------------------------------
 artifacts_combined_eoro26 <- list (
-  eora_ma_yearly_average_shares_list = eora_ma_yearly_average_shares_list
+  eora_ma_average_shares_list = eora_ma_average_shares_list
 )
 write_rds(artifacts_combined_eoro26,
           file = here("Outputs", "artifacts_eoro26_average_shares.rds"))
