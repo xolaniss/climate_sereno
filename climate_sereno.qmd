@@ -286,7 +286,7 @@ To test whether sectoral market competition/concentration influences the extent 
 
 ```{r}
 #| label: tbl-inflation_summary
-#| tbl-cap: "Summary statistics of sectoral inflation rates"
+#| tbl-cap: "Summary statistics of sectoral inflation rates (%)"
 #| ft.arraystretch: 0.6
 
 inflation_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |> 
@@ -417,10 +417,10 @@ climate_summary_tbl <-
   mutate(
     variable = 
       case_when(
-        variable == "land_weighted_temp_anomaly" ~ "Land-weighted temperature (deviation from mean) (°C)",
-        variable == "population_weighted_temp_anomaly" ~ "Population-weighted temperature (deviation from mean) (°C)",
-        variable == "land_weighted_precip_anomaly" ~ "Land-weighted precipitation (deviation from mean) (mm)",
-        variable == "population_weighted_precip_anomaly" ~ "Population-weighted precipitation (deviation from mean) (mm)"
+        variable == "land_weighted_temp_anomaly" ~ "Land-weighted temperature (deviation from mean)",
+        variable == "population_weighted_temp_anomaly" ~ "Population-weighted temperature (deviation from mean) ",
+        variable == "land_weighted_precip_anomaly" ~ "Land-weighted precipitation (deviation from mean) ",
+        variable == "population_weighted_precip_anomaly" ~ "Population-weighted precipitation (deviation from mean) "
       )
   )
 
@@ -486,35 +486,35 @@ extreme_descriptives_tbl <-
   mutate(
     variable = 
       case_when(
-        variable == "1" ~ "Land-weighted temperature extreme (90th percentile) (°C)",
-        variable == "2" ~ "Land-weighted temperature extreme (10th percentile) (°C)",
-        variable == "3" ~ "Land-weighted precipitation extreme (90th percentile) (mm)",
-        variable == "4" ~ "Land-weighted precipitation extreme (10th percentile) (mm)",
+        variable == "1" ~ "Land-weighted temperature shock (90th percentile)",
+        variable == "2" ~ "Land-weighted temperature shock (10th percentile)",
+        variable == "3" ~ "Land-weighted precipitation shock (90th percentile)",
+        variable == "4" ~ "Land-weighted precipitation shock (10th percentile)",
         
-        variable == "5" ~ "Population-weighted temperature extreme (90th percentile) (°C)",
-        variable == "6" ~ "Population-weighted temperature extreme (10th percentile) (°C)",
-        variable == "7" ~ "Population-weighted precipitation extreme (90th percentile) (mm)",
-        variable == "8" ~ "Population-weighted precipitation extreme (10th percentile) (mm)",
+        variable == "5" ~ "Population-weighted temperature shock (90th percentile)",
+        variable == "6" ~ "Population-weighted temperature shock (10th percentile)",
+        variable == "7" ~ "Population-weighted precipitation shock (90th percentile)",
+        variable == "8" ~ "Population-weighted precipitation shock (10th percentile)",
         
-        variable == "9" ~ "Land-weighted temperature extreme (95th percentile) (°C)",
-        variable == "10" ~ "Land-weighted temperature extreme (5th percentile) (°C)",
-        variable == "11" ~ "Land-weighted precipitation extreme (95th percentile) (mm)",
-        variable == "12" ~ "Land-weighted precipitation extreme (5th percentile) (mm)",
+        variable == "9" ~ "Land-weighted temperature shock (95th percentile)",
+        variable == "10" ~ "Land-weighted temperature shock (5th percentile)",
+        variable == "11" ~ "Land-weighted precipitation shock (95th percentile)",
+        variable == "12" ~ "Land-weighted precipitation shock (5th percentile)",
 
-        variable == "13" ~ "Population-weighted temperature extreme (95th percentile) (°C)",
-        variable == "14" ~ "Population-weighted temperature extreme (5th percentile) (°C)",
-        variable == "15" ~ "Population-weighted precipitation extreme (95th percentile) (mm)",
-        variable == "16" ~ "Population-weighted precipitation extreme (5th percentile) (mm)",
+        variable == "13" ~ "Population-weighted temperature shock (95th percentile)",
+        variable == "14" ~ "Population-weighted temperature shock (5th percentile)",
+        variable == "15" ~ "Population-weighted precipitation shock (95th percentile)",
+        variable == "16" ~ "Population-weighted precipitation shock (5th percentile",
         
-        variable == "17" ~ "Land-weighted temperature extreme (99th percentile) (°C)",
-        variable == "18" ~ "Land-weighted temperature extreme (1st percentile) (°C)",
-        variable == "19" ~ "Land-weighted precipitation extreme (99th percentile) (mm)",
-        variable == "20" ~ "Land-weighted precipitation extreme (1st percentile) (mm)",
+        variable == "17" ~ "Land-weighted temperature shock (99th percentile)",
+        variable == "18" ~ "Land-weighted temperature shock (1st percentile)",
+        variable == "19" ~ "Land-weighted precipitation shock (99th percentile",
+        variable == "20" ~ "Land-weighted precipitation shock (1st percentile)",
         
-        variable == "21" ~ "Population-weighted temperature extreme (99th percentile) (°C)",
-        variable == "22" ~ "Population-weighted temperature extreme (1st percentile) (°C)",
-        variable == "23" ~ "Population-weighted precipitation extreme (99th percentile) (mm)",
-        variable == "24" ~ "Population-weighted precipitation extreme (1st percentile) (mm)"
+        variable == "21" ~ "Population-weighted temperature shock (99th percentile)",
+        variable == "22" ~ "Population-weighted temperature shock (1st percentile)",
+        variable == "23" ~ "Population-weighted precipitation shock (99th percentile)",
+        variable == "24" ~ "Population-weighted precipitation shock (1st percentile)"
      
       )
   ) 
@@ -522,6 +522,11 @@ extreme_descriptives_tbl <-
   
 climate_summary_tbl |> 
   bind_rows(extreme_descriptives_tbl) |> 
+  mutate(group = ifelse(
+    str_detect(variable, "temperature"), "Temperature (°C)",  "Precipitation (mm)")
+  ) |> 
+  relocate(group, .before = variable)  |>
+  arrange(group) |> 
   rename(
     "Variable" = variable,
     "Mean" = Mean,
@@ -530,14 +535,51 @@ climate_summary_tbl |>
     "Maximum" = Max,
     "Observations" = Observations
   ) |>
-  flextable_word() |>
-  align(align = "left", part = "all") |>
-  autofit(add_w = -0.1) 
+  as_grouped_data(groups = c("group"), expand_single = TRUE) |> 
+  as_flextable(hide_grouplabel = TRUE) |> 
+  align(align = "center", part = "body") |> 
+  align(align = "left", j = 1, part = "all") |> 
+  align(align = "center", i = c(1, 16)) |>
+  colformat_double(j = 2:6, digits = 2) |>
+  autofit(add_w = -0.05) 
   
 
 
 ```
 
+\newpage
+## Matching sectoral price and IO data
 
+```{r}
+#| label: tbl-sectoral_matching
+#| tbl-cap: "Matching sectoral price and Input-output data (Eora26)"
+#| ft.arraystretch: 0.6
+
+tribble(
+  ~ "Price Index", ~ "Input-output classifation",  ~ "Input-output Sector",
+  "Headline", "1-26", "All sectors",
+  "Energy", "7,13", "Petroleum, Chemical and Non-Metallic Mineral Products, Electricity, Gas and Water",
+  "Food and Beverages",	"1, 2, 4", "Agriculture, Fishing, Food & Beverages",
+  "Clothing",	"5", "Textiles and Wearing Apparel",
+  "Housing",	"14, 15", "Construction, Maintenance and repair",
+  "Household goods", "6, 9, 11",	"Wood and paper, Electrical and machinery, Other manufacturing",
+  "Transport", "10, 19",	"Transport equipment, Transport",
+  "Health",	"23", "Education, Health and Other Services",
+  "Education",	"23", "Education, Health and Other Services",
+  "Communication",	"20", "Post and Telecommunications",
+  "Hotels","18",	"Hotels and Restaurants"
+) |> 
+  flextable_word() |> 
+  align(align = "left", part = "all") |> 
+  autofit(add_w = 0.6) |> 
+  set_header_labels(
+    `Price Index` = "Price Index",
+    `Input-output classifation` = "Input-output classifation",
+    `Input-output Sector` = "Input-output Sector"
+  ) |> 
+  autofit(add_w = 0.)
+
+
+```
 
 

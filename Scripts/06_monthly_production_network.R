@@ -44,7 +44,8 @@ source(here("Functions", "fx_plot.R"))
 
 # Import -------------------------------------------------------------
 eora_ma_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
-  pluck(1)
+  pluck(1) |>
+  as_tibble()
 
 # Expanding to monthly frequency ------------------------------------------
 expanded_dates_tbl <- rep(seq(
@@ -59,30 +60,30 @@ country_names_tbl <- tibble("country" = rep(country_names_vec, times = 336)) |>
   unnest(country) |>
   arrange(country) |>
   tibble("date" = expanded_dates_tbl$value) |>
-  relocate(country, .after = date) # creating monthly date and name combination
-
+  relocate(country, .after = date) |> # creating monthly date and name combination
+  filter(date >= "2000-01-01")
 
 ## Expanding agrifood ------------------------------------------------------
 eora_ma_monthly_agri_food_tbl <-
   country_names_tbl |>
-  left_join(
+  dplyr::left_join(
     eora_ma_tbl |>
       filter(industry == "agrifood"),
     by = join_by(date == year, country == country)
   ) |>
-  fill(c(3:1893), .direction = "down") # monthly for agrifood
-
+  mutate(industry  = "Agrifood") |>
+  fill(c(3:1893), .direction = "down")   # monthly for agrifood
 
 ## Expanding downstream ----------------------------------------------------
 eora_ma_monthly_downstream_tbl <-
   country_names_tbl |>
-  left_join(
+  dplyr::left_join(
     eora_ma_tbl |>
       filter(industry == "downstream"),
     by = join_by(date == year, country == country)
   ) |>
+  mutate(industry  = "Downstream") |>
   fill(c(3:1893), .direction = "down") # monthly for downstream
-
 
 ## Combining back to full tbl ----------------------------------------------
 eora_ma_monthly_tbl <-
@@ -90,8 +91,12 @@ eora_ma_monthly_tbl <-
   bind_rows(eora_ma_monthly_downstream_tbl) |>
   arrange(country) |>
   rename(row_country = country) |>
-  rename(row_industry = industry)
-
+  rename(row_industry = industry) |>
+  mutate(
+    row_industry = paste0(row_country, ".", row_industry)) |>
+  relocate(row_industry, .after = date) |>
+  dplyr::select(-row_country) |>
+  as_tibble()
 
 ## Pivoting longer using dt -------------------------------------------------------
 tic()
@@ -99,21 +104,30 @@ eora_ma_monthly_long_tbl <-
   eora_ma_monthly_tbl |>
   as.data.table() |>
   pivot_longer(
-    cols = -c(date, row_country, row_industry),
-    names_to = "sector",
+    cols = -c(date, row_industry,),
+    names_to = "col_industry",
     values_to = "ma"
   ) |>
-  separate(sector,
-              sep = ".",
-              into = c("column_country", "column_industry")
-  ) |>
-  mutate(column_industry  = str_to_lower(column_industry))
+  tidytable::separate(col = "row_industry",
+                      into = c("row_country", "row_industry"),
+                      sep = ".") |>
+  tidytable::separate(col = "col_industry",
+                      into = c("col_country", "col_industry"),
+                      sep = ".") |>
+  dplyr::select(date,
+                row_country,
+                row_industry,
+                col_country,
+                col_industry,
+                ma) |>
+  as_tibble()
 toc()
 
 
 # Export ---------------------------------------------------------------
 artifacts_monthly_production_network <- list (
-
+  eora_ma_monthly_long_tbl = eora_ma_monthly_long_tbl,
+  eora_ma_monthly_tbl = eora_ma_monthly_tbl
 )
 
 write_rds(artifacts_monthly_production_network,

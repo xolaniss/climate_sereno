@@ -68,16 +68,31 @@ eora_ma_yearly_tbl <-
   bind_rows(.id = "year") |>
   # # janitor::clean_names() |>
   mutate(year = as.Date(year, format = "%Y")) |>
-  mutate(year = year  %-time% "3months") |>
-  mutate(year = year  %-time% "16days")
+  mutate(year = year(year)) |>
+  mutate(year = as.Date(paste0(year, "-01-01")))
 toc()
 plan(sequential)
 
-
-
+# Turning to shares -----------------------------------
+tic()
+eora_ma_shares_yearly_tbl <-
+  eora_ma_yearly_tbl |>
+  mutate(
+    across(
+      c(-year, -country, -industry),
+      ~ .x / rowSums(across(c(-year, -country, -industry)), na.rm = TRUE)
+    )
+  ) |>
+  mutate(
+    across(
+      c(-year, -country, -industry),
+      ~ round(.x, 4)
+    )
+  )
+toc()
 # Export ---------------------------------------------------------------
 artifacts_combined_eoro26 <- list (
-  eora_ma_yearly_tbl = eora_ma_yearly_tbl
+  eora_ma_shares_yearly_tbl = eora_ma_shares_yearly_tbl
 )
 
 write_rds(artifacts_combined_eoro26,
