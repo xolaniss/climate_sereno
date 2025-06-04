@@ -42,6 +42,9 @@ library(furrr)
 library(parallel)
 library(tictoc)
 
+options(scipen = 999)
+mem.maxVSize(100000)
+
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
@@ -61,7 +64,8 @@ climate_shocks <- read_rds(here("Outputs", "artifacts_climate_shocks.rds")) |>
 # Calculating network shocks ---------------------------------------------------
 sec_anomaly <- function(data, anomaly, type, source) {
   if(type == "domestic"){
-   tbl <-  data |>
+   tbl <-
+     data |>
       filter(industry == source) |>
       left_join(climate_shocks |>
                   dplyr::select(date, country, {{anomaly}}),
@@ -69,22 +73,33 @@ sec_anomaly <- function(data, anomaly, type, source) {
       mutate(
         across(contains("."), ~ .x * {{anomaly}})
       ) |>
-      dplyr::select(- country, - industry,  - {{anomaly}}) |>
-      pivot_longer(
-        cols = -c(date),
-        names_to = "country.industry",
-        values_to = "value"
-      ) |>
-      tidytable::separate(col = "country.industry",
-                          into = c("country", "industry"),
-                          sep = ".") |>
-      relocate(c("country", "industry"), .after = "date") |>
+      # dplyr::select(- country, - industry,  - {{anomaly}}) |>
+      # pivot_longer(
+      #   cols = -c(date),
+      #   names_to = "country.industry",
+      #   values_to = "value"
+      # ) |>
+      # tidytable::separate(col = "country.industry",
+      #                     into = c("country", "industry"),
+      #                     sep = ".") |>
+      # relocate(c("country", "industry"), .after = "date") |>
+     dplyr::select(- {{anomaly}}) |>
+     pivot_longer(
+       cols = -c(date, country, industry ),
+       names_to = "country.industry",
+       values_to = "value"
+     ) |>
+     tidytable::separate(col = "country.industry",
+                         into = c("dest_country", "dest_industry"),
+                         sep = ".") |>
+     relocate(c("dest_country", "dest_industry"), .before = "value") |>
       as_tibble()
       gc()
       return(tbl)
 
-  } else{
-  tbl <- data |>
+  } else {
+  tbl <-
+    data |>
     filter(industry == source) |>
     left_join(climate_shocks |>
                   dplyr::select(date, country, {{anomaly}}),
@@ -93,115 +108,120 @@ sec_anomaly <- function(data, anomaly, type, source) {
     mutate(
       across(contains("."), ~ .x * {{anomaly}})
     ) |>
-    dplyr::select(- country, - industry, - {{anomaly}}) |>
+    # dplyr::select(- country, - industry, - {{anomaly}}) |>
+    # pivot_longer(
+    #   cols = -c(date),
+    #   names_to = "country.industry",
+    #   values_to = "value"
+    # ) |>
+    # tidytable::separate(col = "country.industry",
+    #                     into = c("country", "industry"),
+    #                     sep = ".") |>
+    # relocate(c("country", "industry"), .after = "date") |>
+    dplyr::select(- {{anomaly}}) |>
     pivot_longer(
-      cols = -c(date),
+      cols = -c(date, country, industry ),
       names_to = "country.industry",
       values_to = "value"
     ) |>
     tidytable::separate(col = "country.industry",
-                        into = c("country", "industry"),
+                        into = c("dest_country", "dest_industry"),
                         sep = ".") |>
-    relocate(c("country", "industry"), .after = "date") |>
+    relocate(c("dest_country", "dest_industry"), .before = "value") |>
     as_tibble()
     gc()
     return(tbl)
   }
 }
 
+
 ## Domestic shocks ---------------------------------------------------
 WD_agric_temp_tbl <- sec_anomaly(input_output_tbl,
                      land_weighted_temp_anomaly,
                      "domestic",
                      "Agrifood"
-                     )
-WD_agric_temp_tbl |> tail()
-
+                     ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 
 WD_non_agric_temp_tbl <- sec_anomaly(input_output_tbl,
                      population_weighted_temp_anomaly,
                      "domestic",
                      "Downstream"
-                     )
-WD_non_agric_temp_tbl |> tail()
+                     ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 
 WD_agric_precip_tbl <- sec_anomaly(input_output_tbl,
                      land_weighted_precip_anomaly,
                      "domestic",
                      "Agrifood"
-                     )
-WD_agric_precip_tbl |> tail()
+                     ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 WD_non_agric_precip_tbl <- sec_anomaly(input_output_tbl,
                      population_weighted_precip_anomaly,
                      "domestic",
                      "Downstream"
-                     )
-WD_non_agric_precip_tbl |> tail()
+                     ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 ## Foreign shocks ---------------------------------------------------
 WD_foreign_agric_temp_tbl <- sec_anomaly(input_output_tbl,
                                land_weighted_temp_anomaly,
                                "foreign",
                                "Agrifood"
-                               )
-WD_foreign_agric_temp_tbl |> tail()
+                               ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 WD_foreign_non_agric_temp_tbl <- sec_anomaly(input_output_tbl,
                                population_weighted_temp_anomaly,
                                "foreign",
                                "Downstream"
-                               )
-WD_foreign_non_agric_temp_tbl |> tail()
+                               ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 
 WD_foreign_agric_precip_tbl <- sec_anomaly(input_output_tbl,
                                land_weighted_precip_anomaly,
                                "foreign",
                                "Agrifood"
-                               )
-WD_foreign_agric_precip_tbl |> tail()
+                               ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
 
 WD_foreign_non_agric_precip_tbl <- sec_anomaly(input_output_tbl,
                                population_weighted_precip_anomaly,
                                "foreign",
                                "Downstream"
-                               )
-WD_foreign_non_agric_precip_tbl |> tail()
+                               ) |>
+  head(n = 100) # just taking the first 100 rows for now
 
-# Visualisation example ---------------------------------------------------
-climate_shocks |> filter(country == "ZAF") |>
-  ggplot(aes(x = date, y = land_weighted_precip_anomaly)) +
+# Visualization example ---------------------------------------------------
+climate_shocks |>
+  filter(country == "USA") |>
+  ggplot(aes(x = date, y = land_weighted_temp_anomaly)) +
   geom_line() +
-  labs(
-    title = "Land Weighted Temperature Anomaly",
-    x = "Date",
-    y = "Temperature Anomaly (C)"
-  ) +
-  theme_minimal() +
-  scale_x_date(date_labels = "%Y-%m", date_breaks = "1 year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme_minimal()
 
-
-WD_agric_temp_tbl |> filter(country == "ZAF" &
-                              industry  == "Education") |>
-  ggplot(aes(x = date, y = value)) +
+WD_non_agric_temp_tbl |>
+  filter(dest_country == "ZAF") |>
+  ggplot(aes(x = date, y = value, col = industry)) +
   geom_col() +
-  labs(
-    title = "Land Weighted Temperature Anomaly - Domestic",
-    x = "Date",
-    y = "Temperature Anomaly (C)"
-  ) +
   theme_minimal() +
-  scale_x_date(date_labels = "%Y-%m", date_breaks = "1 year") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  facet_wrap(~ industry, scales = "free_y")
+
 
 # Export ---------------------------------------------------------------
 artifacts_network_shocks <- list (
-  input_out_climate_tbl = input_out_climate_tbl
+  WD_agric_temp_tbl = WD_agric_temp_tbl,
+  WD_non_agric_temp_tbl = WD_non_agric_temp_tbl,
+  WD_agric_precip_tbl = WD_agric_precip_tbl,
+  WD_non_agric_precip_tbl = WD_non_agric_precip_tbl,
+  WD_foreign_agric_temp_tbl = WD_foreign_agric_temp_tbl,
+  WD_foreign_non_agric_temp_tbl = WD_foreign_non_agric_temp_tbl,
+  WD_foreign_agric_precip_tbl = WD_foreign_agric_precip_tbl,
+  WD_foreign_non_agric_precip_tbl = WD_foreign_non_agric_precip_tbl
 )
 
 write_rds(artifacts_network_shocks,

@@ -44,58 +44,52 @@ mem.maxVSize(100000)
 source(here("Functions", "fx_plot.R"))
 
 # Import and clean -------------------------------------------------------------
-## Eora26 data ---------------------------------------------------------------
-eora_ma_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
+## Network shocks data ---------------------------------------------------------------
+network_shocks <-
+  read_rds(here("Outputs", "artifacts_network_shocks.rds"))
+
+domestic_network_shocks_tbl <- network_shocks |>
   pluck(1)
 
-## CPI data ---------------------------------------------------------------
-cpi_tbl <- read_rds(here("Outputs", "artifacts_cpi.rds")) |>
+foreign_network_shocks_tbl <- network_shocks |>
+  pluck(2)
+
+## Inflation data ---------------------------------------------------------------
+inflation_rate_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |>
   pluck(1) |>
-  filter(date > "1990-01-01") |>
-  dplyr::select(-country) |>
-  rename(country = country_abs) |>
-  mutate(category = str_to_lower(category)) |>
-  mutate(category = str_replace_all(category, "hh goods", "household_goods")) |>
-  mutate(category = str_replace_all(category, "food & bev", "agrifood")) |>
-  filter(category != "other") |>
-  filter(category != "alcbev") |>
-  filter(category != "recreation")
-
-cpi_industry_tbl <-
-  cpi_tbl |>
-  filter(category != "headline") |>
-  rename(cpi_industry = cpi)
-
-cpi_headline_tbl <-
-  cpi_tbl |>
-  filter(category == "headline") |>
-  rename(cpi_headline = cpi)
-
+  mutate(
+    date = as.Date(date)
+  ) |>
+  rename(
+    industry = category
+  ) |>
+  mutate(industry = str_to_title(industry)) |>
+  filter(date >= "2000-01-01")
+inflation_rate_tbl
 
 ## Climate data ---------------------------------------------------------------
 climate_data_tbl <- read_rds(here("Outputs", "artifacts_climate_data.rds")) |>
   pluck(5)
 
 
-# EDA -------------------------------------------------------------------
-climate_data_tbl |> skim()
-eora_ma_tbl |> skim()
-cpi_headline_tbl |> skim()
-cpi_industry_tbl |> skim()
-
-
 # Combining data ---------------------------------------------------------------
 combined_data_tbl <-
-  eora_ma_tbl |>
-  left_join(climate_data_tbl, by = join_by(date == date,
-                                            column_country == country)) |>
-  left_join(cpi_industry_tbl, by = join_by(date == date,
-                                          column_country == country,
-                                          column_industry == category
-                                          )) |>
-  left_join(cpi_headline_tbl, by = join_by(date == date,
-                                           column_country == country,
-                                           column_industry == category)) # check matching criteria
+  inflation_rate_tbl |>
+  filter(industry != "headline") |>
+  inner_join(domestic_network_shocks_tbl,
+            by = join_by(date,
+                        country,
+                        industry)) |>
+  drop_na()
+combined_data_tbl |> print(n = 100)
+domestic_network_shocks_tbl |> print(n = 100)
+combined_data_tbl |>
+  group_by(country, industry) |>
+  summarise(
+    n = n(),
+    .groups = "drop"
+  ) |>
+  print(n = Inf)
 
 # Export ---------------------------------------------------------------
 artifacts_combined_data <- list (
