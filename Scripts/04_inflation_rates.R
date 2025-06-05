@@ -60,15 +60,20 @@ inflation_rate_tbl <-
                           ) # annualized and seasonal adjusted
   ) |>
   ungroup() |>
-  dplyr::select(-cpi)
+  dplyr::select(-cpi) |>
+  mutate(
+    inflation_rate = ifelse(is.infinite(inflation_rate), NA, inflation_rate),
+    inflation_rate = ifelse(is.nan(inflation_rate), NA, inflation_rate)
+  )
 
-inflation_ratecpi_tbl |>
+inflation_rate_tbl |> tail()
+inflation_rate_tbl |>
   skim()
 
 
 # Visualisation ----------------------------------------------------------
 inflation_rate_tbl|>
-  filter(country == "GBR") |>
+  filter(country == "USA") |>
   ggplot(aes(x = date, y = inflation_rate, col = category)) +
   geom_line() +
   labs(

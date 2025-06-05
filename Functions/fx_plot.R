@@ -9,7 +9,7 @@ function (data,
           scale = "free",
           ncol = NULL) {
   ggplot(data, aes(x = !!sym(date), y = !!sym(value), col = !!sym(col))) +
-    geom_col(width = 40) +
+    geom_line() +
     facet_wrap (as.formula(paste0(".~", facet_var)), scale = scale, ncol = ncol) +
     theme_bw() +
     theme(

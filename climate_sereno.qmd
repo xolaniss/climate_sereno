@@ -84,7 +84,7 @@ set_flextable_defaults(
   fp_border = fp_border(color = "black", width = 0.5, style = "solid")
 )
 
-
+options(scipen = 999) # disable scientific notation
 ```
 
 ```{r functions}
@@ -158,7 +158,6 @@ Given the complex interplay of upward and downward forces on prices, the overall
 ## Prices
 We build a global dataset of monthly Consumer Price indexes and sectoral sub-indexes sourced from Haver Analytics. We use non-seasonally adjusted data due to better coverage and we remove seasonal effects. By matching the 12 CPI categories  which classify consumer expenditure to the standard taxonomy of industrial sectors (UN 2008), we derive sectoral retail prices – see @tbl-cpi_matching.^[We exclude ‘Alcohol and Tobacco’ prices as well as ‘Other’ prices due to the impossibility of properly matching these products to a particular industrial sector.] Our sample covers 151 countries from January 1980 to December 2023; however, to make the panel more balanced, we restrict the analysis to the period 2000-2023 (details on data availability per country-sector are in Table A1 in the Appendix). 
 
-\newpage
 
 ```{r}
 #| label: tbl-cpi_matching
@@ -282,5 +281,305 @@ To test whether sectoral market competition/concentration influences the extent 
 
 # Appendix
 
-## Data Availability
+
+## Inflation rates
+
+```{r}
+#| label: tbl-inflation_summary
+#| tbl-cap: "Summary statistics of sectoral inflation rates (%)"
+#| ft.arraystretch: 0.6
+
+inflation_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |> 
+  pluck(1) |> 
+  filter(date >= "2000-01-01") 
+
+inflation_summary_tbl <- 
+  inflation_tbl |>
+  filter(category == "headline") |>
+  drop_na(inflation_rate) |>
+  group_by(category) |>
+  summarise(
+    Mean = mean(inflation_rate, na.rm = TRUE),
+    SD = sd(inflation_rate, na.rm = TRUE),
+    Min = min(inflation_rate, na.rm = TRUE),
+    Max = max(inflation_rate, na.rm = TRUE),
+    Observations = n()
+  ) 
+
+inflation_sector_summary_tbl <- 
+  inflation_tbl |>
+  filter(category != "headline") |>
+  drop_na(inflation_rate) |>
+  group_by(category) |>
+  summarise(
+    Mean = mean(inflation_rate, na.rm = TRUE),
+    SD = sd(inflation_rate, na.rm = TRUE),
+    Min = min(inflation_rate, na.rm = TRUE),
+    Max = max(inflation_rate, na.rm = TRUE),
+    Observations = n()
+  ) 
+
+
+inflation_summary_tbl |>
+  bind_rows(inflation_sector_summary_tbl)|>
+  rename(
+    "Sector" = category,
+    "Mean" = Mean,
+    "Standard Deviation" = SD,
+    "Minimum" = Min,
+    "Maximum" = Max,
+    "Observations" = Observations
+  ) |> 
+  mutate(
+    Sector =
+      case_when(
+        Sector == "headline" ~ "Headline",
+        Sector == "energy" ~ "Energy",
+        Sector == "agrifood" ~ "Agri-food",
+        Sector == "clothing" ~ "Clothing",
+        Sector == "housing" ~ "Housing",
+        Sector == "household_goods" ~ "Household Goods",
+        Sector == "transport" ~ "Transport",
+        Sector == "health" ~ "Health",
+        Sector == "recreation" ~ "Recreation",
+        Sector == "education" ~ "Education",
+        Sector == "communications" ~ "Communications",
+        Sector == "hotels" ~ "Hotels"
+      )
+  ) |>
+  flextable_word() |>
+  align(align = "left", part = "all") |>
+  autofit(add_w = 0.2)
+
+```
+
+\newpage
+
+## Countries and month-sectors in sample
+
+```{r}
+#| label: tbl-countries_month_sectors
+#| tbl-cap: "Countries and month-sectors in the sample"
+#| ft.arraystretch: 0.4
+
+library(countrycode)
+
+inflation_tbl |>
+  filter(category != "headline") |>
+  mutate(country = countrycode(country, "iso3c", "country.name")) |>
+  drop_na() |> 
+  group_by(country) |>
+  count() |> 
+  rename(    
+    "Country" = country,
+    "Number of month-sectors" = n
+  ) |>
+  ungroup() |> 
+  flextable_word() |>
+  align(align = "left", part = "all") |>
+  align(align = "center", j =2, part = "all") |>
+  autofit(add_w = 2)
+
+
+
+```
+
+
+\newpage
+
+## Climate shocks
+
+```{r}
+#| label: tbl-climate_shocks
+#| tbl-cap: "Summary statistics of climate shocks"
+#| ft.arraystretch: 0.6
+
+
+climate_shocks_tbl <- read_rds(here("Outputs", "artifacts_climate_shocks.rds")) |> pluck(1)
+
+climate_summary_tbl <- 
+  climate_shocks_tbl |>
+  dplyr::select(contains("_anomaly"), country, date) |> 
+  pivot_longer(
+    cols = -c(country, date),
+    names_to = "variable",
+    values_to = "value"
+  ) |>
+  drop_na(value) |>
+  group_by(variable) |>
+  summarise(
+    Mean = mean(value, na.rm = TRUE),
+    SD = sd(value, na.rm = TRUE),
+    Min = min(value, na.rm = TRUE),
+    Max = max(value, na.rm = TRUE),
+    Observations = n()
+  ) |> 
+  mutate(
+    variable = 
+      case_when(
+        variable == "land_weighted_temp_anomaly" ~ "Land-weighted temperature (deviation from mean)",
+        variable == "population_weighted_temp_anomaly" ~ "Population-weighted temperature (deviation from mean) ",
+        variable == "land_weighted_precip_anomaly" ~ "Land-weighted precipitation (deviation from mean) ",
+        variable == "population_weighted_precip_anomaly" ~ "Population-weighted precipitation (deviation from mean) "
+      )
+  )
+
+climate_summary_tbl
+
+
+extreme_descriptives <- 
+  function(data, variable, anomaly){
+  data |> 
+    filter({{variable}} == "Yes") |> 
+    dplyr::select(date, country, {{anomaly}}) |>
+    drop_na() |> 
+    summarise(
+      Mean = mean({{anomaly}}, na.rm = TRUE),
+      SD = sd({{anomaly}}, na.rm = TRUE),
+      Min = min({{anomaly}}, na.rm = TRUE),
+      Max = max({{anomaly}}, na.rm = TRUE),
+      Observations = n()
+  )
+}
+
+extreme_vars <- list(
+  c("land_weighted_temp_extreme_p_0.9", "land_weighted_temp_anomaly"),
+  c("land_weighted_temp_extreme_p_0.1", "land_weighted_temp_anomaly"),
+  c("land_weighted_precip_extreme_p_0.9", "land_weighted_precip_anomaly"),
+  c("land_weighted_precip_extreme_p_0.1", "land_weighted_precip_anomaly"),
+  
+  c("population_weighted_temp_extreme_p_0.9", "population_weighted_temp_anomaly"),
+  c("population_weighted_temp_extreme_p_0.1", "population_weighted_temp_anomaly"),
+  c("population_weighted_precip_extreme_p_0.9", "population_weighted_precip_anomaly"),
+  c("population_weighted_precip_extreme_p_0.1", "population_weighted_precip_anomaly"),
+  
+  c("land_weighted_temp_extreme_p_0.95", "land_weighted_temp_anomaly"),
+  c("land_weighted_temp_extreme_p_0.05", "land_weighted_temp_anomaly"),
+  c("land_weighted_precip_extreme_p_0.95", "land_weighted_precip_anomaly"),
+  c("land_weighted_precip_extreme_p_0.05", "land_weighted_precip_anomaly"),
+
+  c("population_weighted_temp_extreme_p_0.95", "population_weighted_temp_anomaly"),
+  c("population_weighted_temp_extreme_p_0.05", "population_weighted_temp_anomaly"),
+  c("population_weighted_precip_extreme_p_0.95", "population_weighted_precip_anomaly"),
+  c("population_weighted_precip_extreme_p_0.05", "population_weighted_precip_anomaly"),
+  
+  c("land_weighted_temp_extreme_p_0.99", "land_weighted_temp_anomaly"),
+  c("land_weighted_temp_extreme_p_0.01", "land_weighted_temp_anomaly"),
+  c("land_weighted_precip_extreme_p_0.99", "land_weighted_precip_anomaly"),
+  c("land_weighted_precip_extreme_p_0.01", "land_weighted_precip_anomaly"),
+
+  
+  c("population_weighted_temp_extreme_p_0.99", "population_weighted_temp_anomaly"),
+  c("population_weighted_temp_extreme_p_0.01", "population_weighted_temp_anomaly"),
+  c("population_weighted_temp_extreme_p_0.99", "population_weighted_temp_anomaly"),
+  c("population_weighted_temp_extreme_p_0.01", "population_weighted_temp_anomaly")
+)
+
+extreme_descriptives_tbl <- 
+  extreme_vars |> 
+  map(~ extreme_descriptives(
+    data = climate_shocks_tbl, 
+    variable = !!sym(.x[1]),
+    anomaly = !!sym(.x[2])
+    )) |> 
+  bind_rows(.id = "variable") |> 
+  mutate(
+    variable = 
+      case_when(
+        variable == "1" ~ "Land-weighted temperature shock (90th percentile)",
+        variable == "2" ~ "Land-weighted temperature shock (10th percentile)",
+        variable == "3" ~ "Land-weighted precipitation shock (90th percentile)",
+        variable == "4" ~ "Land-weighted precipitation shock (10th percentile)",
+        
+        variable == "5" ~ "Population-weighted temperature shock (90th percentile)",
+        variable == "6" ~ "Population-weighted temperature shock (10th percentile)",
+        variable == "7" ~ "Population-weighted precipitation shock (90th percentile)",
+        variable == "8" ~ "Population-weighted precipitation shock (10th percentile)",
+        
+        variable == "9" ~ "Land-weighted temperature shock (95th percentile)",
+        variable == "10" ~ "Land-weighted temperature shock (5th percentile)",
+        variable == "11" ~ "Land-weighted precipitation shock (95th percentile)",
+        variable == "12" ~ "Land-weighted precipitation shock (5th percentile)",
+
+        variable == "13" ~ "Population-weighted temperature shock (95th percentile)",
+        variable == "14" ~ "Population-weighted temperature shock (5th percentile)",
+        variable == "15" ~ "Population-weighted precipitation shock (95th percentile)",
+        variable == "16" ~ "Population-weighted precipitation shock (5th percentile",
+        
+        variable == "17" ~ "Land-weighted temperature shock (99th percentile)",
+        variable == "18" ~ "Land-weighted temperature shock (1st percentile)",
+        variable == "19" ~ "Land-weighted precipitation shock (99th percentile",
+        variable == "20" ~ "Land-weighted precipitation shock (1st percentile)",
+        
+        variable == "21" ~ "Population-weighted temperature shock (99th percentile)",
+        variable == "22" ~ "Population-weighted temperature shock (1st percentile)",
+        variable == "23" ~ "Population-weighted precipitation shock (99th percentile)",
+        variable == "24" ~ "Population-weighted precipitation shock (1st percentile)"
+     
+      )
+  ) 
+  
+  
+climate_summary_tbl |> 
+  bind_rows(extreme_descriptives_tbl) |> 
+  mutate(group = ifelse(
+    str_detect(variable, "temperature"), "Temperature (°C)",  "Precipitation (mm)")
+  ) |> 
+  relocate(group, .before = variable)  |>
+  arrange(group) |> 
+  rename(
+    "Variable" = variable,
+    "Mean" = Mean,
+    "Standard Deviation" = SD,
+    "Minimum" = Min,
+    "Maximum" = Max,
+    "Observations" = Observations
+  ) |>
+  as_grouped_data(groups = c("group"), expand_single = TRUE) |> 
+  as_flextable(hide_grouplabel = TRUE) |> 
+  align(align = "center", part = "body") |> 
+  align(align = "left", j = 1, part = "all") |> 
+  align(align = "center", i = c(1, 16)) |>
+  colformat_double(j = 2:6, digits = 2) |>
+  autofit(add_w = -0.05) 
+  
+
+
+```
+
+\newpage
+## Matching sectoral price and IO data
+
+```{r}
+#| label: tbl-sectoral_matching
+#| tbl-cap: "Matching sectoral price and Input-output data (Eora26)"
+#| ft.arraystretch: 0.6
+
+tribble(
+  ~ "Price Index", ~ "Input-output classifation",  ~ "Input-output Sector",
+  "Headline", "1-26", "All sectors",
+  "Energy", "7,13", "Petroleum, Chemical and Non-Metallic Mineral Products, Electricity, Gas and Water",
+  "Food and Beverages",	"1, 2, 4", "Agriculture, Fishing, Food & Beverages",
+  "Clothing",	"5", "Textiles and Wearing Apparel",
+  "Housing",	"14, 15", "Construction, Maintenance and repair",
+  "Household goods", "6, 9, 11",	"Wood and paper, Electrical and machinery, Other manufacturing",
+  "Transport", "10, 19",	"Transport equipment, Transport",
+  "Health",	"23", "Education, Health and Other Services",
+  "Education",	"23", "Education, Health and Other Services",
+  "Communication",	"20", "Post and Telecommunications",
+  "Hotels","18",	"Hotels and Restaurants"
+) |> 
+  flextable_word() |> 
+  align(align = "left", part = "all") |> 
+  autofit(add_w = 0.6) |> 
+  set_header_labels(
+    `Price Index` = "Price Index",
+    `Input-output classifation` = "Input-output classifation",
+    `Input-output Sector` = "Input-output Sector"
+  ) |> 
+  autofit(add_w = 0.)
+
+
+```
+
 
