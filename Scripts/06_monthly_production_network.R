@@ -4,10 +4,7 @@
 # core
 library(tidyverse)
 library(dtplyr)
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
 library(data.table)
-=======
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
 library(readr)
 library(readxl)
 library(here)
@@ -41,14 +38,12 @@ library(urca)
 library(mFilter)
 library(car)
 
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
 # Parallel
 library(tictoc)
 library(arrow)
-=======
 library(tictoc)
 
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
+
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
@@ -76,11 +71,7 @@ country_names_tbl <- tibble("country" = rep(country_names_vec, times = 336)) |>
 ## Expanding agrifood ------------------------------------------------------
 eora_ma_monthly_agri_food_tbl <-
   country_names_tbl |>
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
-  left_join(
-=======
   dplyr::left_join(
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
     eora_ma_tbl |>
       filter(industry == "agrifood"),
     by = join_by(date == year, country == country)
@@ -91,11 +82,7 @@ eora_ma_monthly_agri_food_tbl <-
 ## Expanding downstream ----------------------------------------------------
 eora_ma_monthly_downstream_tbl <-
   country_names_tbl |>
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
-  left_join(
-=======
   dplyr::left_join(
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
     eora_ma_tbl |>
       filter(industry == "downstream"),
     by = join_by(date == year, country == country)
@@ -118,7 +105,6 @@ eora_ma_monthly_tbl <-
 
 ## Pivoting longer using dt -------------------------------------------------------
 tic()
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
 eora_ma_monthly_long_dt <-
   eora_ma_monthly_tbl |>
   as.data.table() |>
@@ -131,7 +117,7 @@ eora_ma_monthly_long_dt <-
            sep = ".",
            into = c("column_country", "column_industry")) |>
   mutate(column_industry  = str_to_lower(column_industry))
-=======
+
 eora_ma_monthly_long_tbl <-
   eora_ma_monthly_tbl |>
   as.data.table() |>
@@ -153,18 +139,14 @@ eora_ma_monthly_long_tbl <-
                 col_industry,
                 ma) |>
   as_tibble()
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
 toc()
 
 
 # Export ---------------------------------------------------------------
 artifacts_monthly_production_network <- list (
-<<<<<<< HEAD:Scripts/07_monthly_production_network.R
-  eora_ma_monthly_long_dt = eora_ma_monthly_long_dt
-=======
+  eora_ma_monthly_long_dt = eora_ma_monthly_long_dt,
   eora_ma_monthly_long_tbl = eora_ma_monthly_long_tbl,
   eora_ma_monthly_tbl = eora_ma_monthly_tbl
->>>>>>> 80046c4fb8499274537215b89bc71d0dff704db1:Scripts/06_monthly_production_network.R
 )
 
 write_parquet(eora_ma_monthly_long_dt,
