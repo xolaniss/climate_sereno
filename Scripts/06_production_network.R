@@ -43,7 +43,7 @@ mem.maxVSize(100000)
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
-<<<<<<< HEAD
+
 # Import -------------------------------------------------------------
 eora_ma_tbl <- read_rds(here("Outputs", "artifacts_combined_eoro26.rds")) |>
   pluck(1) |>
@@ -84,7 +84,7 @@ L <- leontief_inverse(A) # calculate the leontif inverse matrix
 
 # TODO
 # need a square matrix to calculate the leontif inverse
->>>>>>> 8244e2c46637506a7cba0d42abf75182b8eacc77
+
 
 eora_ma_shares_tbl |>
   filter(column_country == "CHN" &
