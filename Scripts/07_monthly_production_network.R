@@ -4,7 +4,6 @@
 # core
 library(tidyverse)
 library(dtplyr)
-library(data.table)
 library(readr)
 library(readxl)
 library(here)
@@ -38,11 +37,7 @@ library(urca)
 library(mFilter)
 library(car)
 
-# Parallel
 library(tictoc)
-library(arrow)
-library(tictoc)
-
 
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
@@ -105,19 +100,6 @@ eora_ma_monthly_tbl <-
 
 ## Pivoting longer using dt -------------------------------------------------------
 tic()
-eora_ma_monthly_long_dt <-
-  eora_ma_monthly_tbl |>
-  as.data.table() |>
-  pivot_longer(
-    cols = -c(date, row_country, row_industry),
-    names_to = "sector",
-    values_to = "ma"
-  ) |>
-  separate(sector,
-           sep = ".",
-           into = c("column_country", "column_industry")) |>
-  mutate(column_industry  = str_to_lower(column_industry))
-
 eora_ma_monthly_long_tbl <-
   eora_ma_monthly_tbl |>
   as.data.table() |>
@@ -144,13 +126,10 @@ toc()
 
 # Export ---------------------------------------------------------------
 artifacts_monthly_production_network <- list (
-  eora_ma_monthly_long_dt = eora_ma_monthly_long_dt,
   eora_ma_monthly_long_tbl = eora_ma_monthly_long_tbl,
   eora_ma_monthly_tbl = eora_ma_monthly_tbl
 )
 
-write_parquet(eora_ma_monthly_long_dt,
-              here("Outputs", "artifacts_monthly_production_network.parquet"))
-
-
+write_rds(artifacts_monthly_production_network,
+          file = here("Outputs", "artifacts_monthly_production_network.rds"))
 
