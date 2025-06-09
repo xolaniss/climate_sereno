@@ -47,7 +47,7 @@ mem.maxVSize(100000)
 
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
-sec_anomaly <- function(data, anomaly, source_sector,  type) {
+sec_anomaly <- function(data, anomaly, source_sector) {
   tbl <-
     data |>
     filter(industry == source_sector) |>
@@ -66,10 +66,9 @@ sec_anomaly <- function(data, anomaly, source_sector,  type) {
                         into = c("dest_country", "dest_industry"),
                         sep = ".") |>
     relocate(c("dest_country", "dest_industry"), .before = "value") |>
-    mutate(sort_dummy = ifelse(
-      country == dest_country, "domestic", "foreign")) |>
-    dplyr::filter(sort_dummy == type) |>
-    dplyr::select(-sort_dummy) |>
+    mutate(domestic = ifelse(country == dest_country, 1, 0)) |>
+    mutate(foreign= ifelse(country != dest_country, 1, 0)) |>
+    dplyr::select(-country, -industry) |>
     as_tibble()
   gc()
   return(tbl)
@@ -81,8 +80,7 @@ multi_sec_anomaly <- function(args, list_names) {
       ~ sec_anomaly(
         input_output_tbl,
         !!sym(.x[1]),
-        .x[2],
-        .x[3]
+        .x[2]
       )
     )
 }
@@ -101,55 +99,44 @@ climate_shocks <- read_rds(here("Outputs", "artifacts_climate_shocks.rds")) |>
 
 
 # Calculating network shocks ---------------------------------------------------
-## Domestic shocks ---------------------------------------------------
-list_names <- c("agric_temp",
-                "non_agric_temp",
-                "agric_precip",
-                "non_agric_precip")
+## Shocks ---------------------------------------------------
+list_names <- c("agric_temp_tbl",
+                "non_agric_temp_tbl",
+                "agric_precip_tbl",
+                "non_agric_precip_tbl")
 
 
-domestic_args_list <- list(
-  c("land_weighted_temp_anomaly", "Agrifood", "domestic"),
-  c("population_weighted_temp_anomaly", "Downstream", "domestic"),
-  c("land_weighted_precip_anomaly", "Agrifood", "domestic"),
-  c("population_weighted_precip_anomaly", "Downstream", "domestic")
+args_list <- list(
+  c("land_weighted_temp_anomaly", "Agrifood"),
+  c("population_weighted_temp_anomaly", "Downstream"),
+  c("land_weighted_precip_anomaly", "Agrifood"),
+  c("population_weighted_precip_anomaly", "Downstream")
 )
 
 tic()
-domestic_shocks_list <- multi_sec_anomaly(domestic_args_list, list_names)
+shocks_list <- multi_sec_anomaly(args_list, list_names)
 toc()
 
-## Foreign shocks ---------------------------------------------------
-foreign_args_list <- list(
-  c("land_weighted_temp_anomaly", "Agrifood", "foreign"),
-  c("population_weighted_temp_anomaly", "Downstream", "foreign"),
-  c("land_weighted_precip_anomaly", "Agrifood", "foreign"),
-  c("population_weighted_precip_anomaly", "Downstream", "foreign")
-)
-
-tic()
-foreign_shocks_list <- multi_sec_anomaly(foreign_args_list, list_names)
-toc()
 
 # Visualization example ---------------------------------------------------
 climate_shocks |>
-  filter(country == "USA") |>
+  filter(country == "ZAF") |>
   ggplot(aes(x = date, y = land_weighted_temp_anomaly)) +
   geom_line() +
   theme_minimal()
 
-WD_non_agric_temp_tbl |>
+shocks_list |>
+  pluck("non_agric_temp_tbl") |>
   filter(dest_country == "ZAF") |>
-  ggplot(aes(x = date, y = value, col = industry)) +
+  ggplot(aes(x = date, y = value, col = dest_industry)) +
   geom_col() +
   theme_minimal() +
-  facet_wrap(~ industry, scales = "free_y")
+  facet_wrap(~ dest_industry, scales = "free_y")
 
 
 # Export ---------------------------------------------------------------
 artifacts_network_shocks <- list (
-  domestic_shocks_list = domestic_shocks_list,
-  foreign_shocks_list = foreign_shocks_list
+  shocks_list = shocks_list
 )
 
 write_rds(artifacts_network_shocks,

@@ -48,11 +48,11 @@ source(here("Functions", "fx_plot.R"))
 network_shocks <-
   read_rds(here("Outputs", "artifacts_network_shocks.rds"))
 
-domestic_network_shocks_tbl <- network_shocks |>
-  pluck(1)
+agric_temp_shocks_tbl <- network_shocks |> pluck(1,1)
+non_agric_temp_shocks_tbl <- network_shocks |> pluck(1,2)
 
-foreign_network_shocks_tbl <- network_shocks |>
-  pluck(2)
+agric_precip_shocks_tbl <- network_shocks |> pluck(1,3)
+non_agric_precip_shocks_tbl <- network_shocks |> pluck(1,4)
 
 ## Inflation data ---------------------------------------------------------------
 inflation_rate_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |>
@@ -64,36 +64,76 @@ inflation_rate_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) 
     industry = category
   ) |>
   mutate(industry = str_to_title(industry)) |>
-  filter(date >= "2000-01-01")
-inflation_rate_tbl
+  filter(date >= "2000-01-01" & industry != "Headline")
 
-## Climate data ---------------------------------------------------------------
-climate_data_tbl <- read_rds(here("Outputs", "artifacts_climate_data.rds")) |>
-  pluck(5)
-
+inflation_rate_tbl |>
+  filter(country == "ZAF" & industry == "Transport" & date >= "2016-01-01")
 
 # Combining data ---------------------------------------------------------------
-combined_data_tbl <-
-  inflation_rate_tbl |>
-  filter(industry != "headline") |>
-  inner_join(domestic_network_shocks_tbl,
+combined_temp_data_tbl <-
+  agric_temp_shocks_tbl |>
+  bind_rows(non_agric_temp_shocks_tbl, .id = "shock_type") |>
+  mutate(
+    shock_type = case_when(
+      shock_type == 1 ~ "Agricultural Temperature Shock",
+      shock_type == 2 ~ "Non-Agricultural Temperature Shock"
+    )
+  ) |>
+  relocate(
+    date,
+    .before = shock_type
+  ) |>
+  rename(country = dest_country,
+         industry = dest_industry) |>
+  left_join(inflation_rate_tbl,
             by = join_by(date,
                         country,
-                        industry)) |>
-  drop_na()
-combined_data_tbl |> print(n = 100)
-domestic_network_shocks_tbl |> print(n = 100)
-combined_data_tbl |>
-  group_by(country, industry) |>
-  summarise(
-    n = n(),
-    .groups = "drop"
+                        industry),
+            relationship = "many-to-many")
+
+combined_precip_data_tbl <-
+  agric_precip_shocks_tbl |>
+  bind_rows(non_agric_precip_shocks_tbl, .id = "shock_type") |>
+  mutate(
+    shock_type = case_when(
+      shock_type == 1 ~ "Agricultural Precipitation Shock",
+      shock_type == 2 ~ "Non-Agricultural Precipitation Shock"
+    )
   ) |>
-  print(n = Inf)
+  relocate(
+    date,
+    .before = shock_type
+  ) |>
+  rename(country = dest_country,
+         industry = dest_industry) |>
+  left_join(inflation_rate_tbl,
+            by = join_by(date,
+                        country,
+                        industry),
+            relationship = "many-to-many")
+
+
+
+
+combined_temp_data_tbl |> filter(
+  country == "ZAF" &
+    foreign == 1 &
+    date >= "2016-01-01" &
+    shock_type == "Non-Agricultural Temperature Shock"
+)
+
+combined_precip_data_tbl |> filter(
+  country == "ZAF" &
+    domestic == 1 &
+    date >= "2016-01-01" &
+    shock_type == "Agricultural Precipitation Shock"
+)
+
 
 # Export ---------------------------------------------------------------
 artifacts_combined_data <- list (
-  combined_data_tbl = combined_data_tbl
+  combined_temp_data_tbl = combined_temp_data_tbl,
+  combined_precip_data_tbl = combined_precip_data_tbl
 )
 
 write_rds(artifacts_combined_data, file = here("Outputs",
