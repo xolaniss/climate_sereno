@@ -57,6 +57,14 @@ path_list <-
     )
   )
 
+path_list_final_demand <-
+  years |>
+  map(
+    ~ glue(
+      "~/Papers/climate_sereno/Data/Eora26/Eora_final_demand/Eora26_{.}_bp_FD.txt"
+    )
+  )
+
 n_cores <- detectCores() - 1 # leave 1 core for OS
 plan(multisession, workers = n_cores) # setting multisession plan
 
@@ -71,7 +79,60 @@ eora_ma_yearly_tbl <-
   mutate(year = year(year)) |>
   mutate(year = as.Date(paste0(year, "-01-01")))
 toc()
+
+
+tic()
+eora_final_demand_list <-
+  path_list_final_demand |>
+  future_map(~ read_delim(.x, col_names = FALSE, show_col_types = FALSE)) |>
+  set_names(years)
+
+toc()
 plan(sequential)
+
+eora_final_demand_names_tbl <-
+  read_delim(here("Data", "Eora26", "indices", "labels_FD.txt"),
+             col_names = FALSE, show_col_types = FALSE) |>
+  dplyr::select(-last_col()) |>
+  # remove last 6 rows
+  slice(-c(1135:1140)) |>
+  mutate(names = paste(X2, X3, sep = ".")) |>
+  mutate(names = paste(names, X4, sep = "_")) |>
+  # remove spaces in names col
+  mutate(names = str_replace_all(names, " ", "_")) |>
+  dplyr::select(names)
+
+eora_transaction_names_tbl <-
+  read_delim(here("Data", "Eora26", "indices", "labels_T.txt"),
+             col_names = FALSE, show_col_types = FALSE) |>
+  dplyr::select(-last_col()) |>
+  slice(-4915) |>
+  mutate(names = paste(X1, X4, sep = ".")) |>
+  mutate(names = str_replace_all(names, " ", "_")) |>
+  dplyr::select(X1, X4, names)
+
+# Clean final demand -----------------------------------------
+eora_final_demand_tbl <-
+  eora_final_demand_list |>
+  map(~ .x |> dplyr::slice(-4915)) |>
+  map(~ .x |> dplyr::select(-c(1135:1140))) |>
+  map(~ .x |> dplyr::rename_with(~ eora_final_demand_names_tbl$names))
+  map(~ .x |> dplyr::mutate(industry = eora_transaction_names_tbl$X4)) |>
+  map(~.x |> relocate(industry, .before = 1)) |>
+  map(~ .x |> pivot_longer(
+    cols = -industry,
+    names_to = "col_name",
+    values_to = "final_demand")) |>
+  map(~ .x |>
+        mutate(country = str_sub(col_name, 1, 3)) |>
+        dplyr::select(-col_name)) |>
+  map(~ .x |> group_by(country, industry) |>
+        summarise(final_demand = sum(final_demand, na.rm = TRUE),
+                  .groups = "drop")) |>
+  bind_rows(.id = "year")
+
+
+
 
 # Turning to shares -----------------------------------
 tic()

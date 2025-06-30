@@ -50,25 +50,26 @@ source(here("Functions", "fx_plot.R"))
 sec_anomaly <- function(data, anomaly, source_sector) {
   tbl <-
     data |>
-    filter(industry == source_sector) |>
+    filter(row_industry == source_sector) |>
     left_join(climate_shocks |>
                 dplyr::select(date, country, {{anomaly}}),
-              by = c("country", "date")) |>
+              by = c("row_country" = "country", "date")) |>
     mutate(
       across(contains("."), ~ .x * {{anomaly}})) |>
     dplyr::select(- {{anomaly}}) |>
-    pivot_longer(
-      cols = -c(date, country, industry ),
+    tidytable::pivot_longer(
+      cols = -c(date, row_country, row_industry),
       names_to = "country.industry",
       values_to = "value"
     ) |>
     tidytable::separate(col = "country.industry",
-                        into = c("dest_country", "dest_industry"),
+                        into = c("col_country", "col_industry"),
                         sep = ".") |>
-    relocate(c("dest_country", "dest_industry"), .before = "value") |>
-    mutate(domestic = ifelse(country == dest_country, 1, 0)) |>
-    mutate(foreign= ifelse(country != dest_country, 1, 0)) |>
-    dplyr::select(-country, -industry) |>
+    relocate(c("col_country", "col_industry"), .before = "value") |>
+    mutate(domestic = ifelse(row_country == col_country, 1, 0)) |>
+    mutate(foreign= ifelse(row_country != col_country, 1, 0)) |>
+    mutate(value = as.numeric(value)) |>
+    dplyr::select(-row_country, -row_industry) |>
     as_tibble()
   gc()
   return(tbl)
@@ -88,15 +89,10 @@ multi_sec_anomaly <- function(args, list_names) {
 # Import -------------------------------------------------------------
 input_output_tbl <- read_rds(here("Outputs",
                                   "artifacts_monthly_production_network.rds")) |>
-  pluck(2) |>
-  tidytable::separate("row_industry",
-                      into = c("country", "industry"), sep = ".") |>
-  as_tibble() |>
-  relocate(c("country", "industry"), .after = "date")
+  pluck(1)
 
 climate_shocks <- read_rds(here("Outputs", "artifacts_climate_shocks.rds")) |>
   pluck(1)
-
 
 # Calculating network shocks ---------------------------------------------------
 ## Shocks ---------------------------------------------------
@@ -117,22 +113,29 @@ tic()
 shocks_list <- multi_sec_anomaly(args_list, list_names)
 toc()
 
-
 # Visualization example ---------------------------------------------------
 climate_shocks |>
-  filter(country == "ZAF") |>
+  filter(country == "USA") |>
   ggplot(aes(x = date, y = land_weighted_temp_anomaly)) +
   geom_line() +
   theme_minimal()
 
 shocks_list |>
   pluck("non_agric_temp_tbl") |>
-  filter(dest_country == "ZAF") |>
-  ggplot(aes(x = date, y = value, col = dest_industry)) +
-  geom_col() +
+  filter(col_country == "USA" & domestic == 1) |>
+  drop_na() |>
+  arrange(date) |>
+  ggplot(aes(x = date, y = value)) +
+  geom_line(aes(col = col_industry)) +
+  facet_wrap(~col_industry, scales = "free_y") +
   theme_minimal() +
-  facet_wrap(~ dest_industry, scales = "free_y")
-
+  theme(
+    legend.position = "none",
+    text = element_text(size = 8)
+  ) +
+  scale_color_manual(
+    values = pnw_palette("Sunset2", 9)
+  )
 
 # Export ---------------------------------------------------------------
 artifacts_network_shocks <- list (

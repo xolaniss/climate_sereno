@@ -51,7 +51,7 @@ combined_data <- read_rds(here("Outputs", "artifacts_combined_data.rds"))
 combined_temp_tbl <- combined_data |> pluck(1)
 combined_precip_tbl <- combined_data |> pluck(2)
 
-# Cleaning -----------------------------------------------------------------
+# first regression -----------------------------------------------------------------
 formula <- as.formula("inflation_rate ~
                        lag(inflation_rate) +
                        value:domestic +
@@ -61,13 +61,6 @@ lm(formula, data = combined_temp_tbl |>
      filter(shock_type == "Agricultural Temperature Shock")) |>
   tidy()
 
-# Transformations --------------------------------------------------------
-
-
-# EDA ---------------------------------------------------------------
-
-
-# Graphing ---------------------------------------------------------------
 
 
 # Export ---------------------------------------------------------------
