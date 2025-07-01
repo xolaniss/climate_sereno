@@ -83,8 +83,8 @@ combined_temp_data_tbl <-
     date,
     .before = shock_type
   ) |>
-  rename(country = dest_country,
-         industry = dest_industry) |>
+  rename(country = col_country,
+         industry = col_industry) |>
   left_join(inflation_rate_tbl,
             by = join_by(date,
                         country,
@@ -104,15 +104,13 @@ combined_precip_data_tbl <-
     date,
     .before = shock_type
   ) |>
-  rename(country = dest_country,
-         industry = dest_industry) |>
+  rename(country = col_country,
+         industry = col_industry) |>
   left_join(inflation_rate_tbl,
             by = join_by(date,
                         country,
                         industry),
             relationship = "many-to-many")
-
-
 
 
 combined_temp_data_tbl |> filter(

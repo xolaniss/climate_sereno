@@ -122,7 +122,7 @@ climate_shocks |>
 
 shocks_list |>
   pluck("non_agric_temp_tbl") |>
-  filter(col_country == "USA" & domestic == 1) |>
+  filter(col_country == "ZAF" & domestic == 1) |>
   drop_na() |>
   arrange(date) |>
   ggplot(aes(x = date, y = value)) +
