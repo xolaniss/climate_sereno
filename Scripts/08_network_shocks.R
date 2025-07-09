@@ -69,7 +69,7 @@ sec_anomaly <- function(data, anomaly, source_sector) {
     mutate(domestic = ifelse(row_country == col_country, 1, 0)) |>
     mutate(foreign= ifelse(row_country != col_country, 1, 0)) |>
     mutate(value = as.numeric(value)) |>
-    dplyr::select(-row_country, -row_industry) |>
+    # dplyr::select(-row_country, -row_industry) |>
     as_tibble()
   gc()
   return(tbl)
@@ -121,8 +121,8 @@ climate_shocks |>
   theme_minimal()
 
 shocks_list |>
-  pluck("non_agric_temp_tbl") |>
-  filter(col_country == "ZAF" & domestic == 1) |>
+  pluck("agric_temp_tbl") |>
+  filter(col_country == "USA" & domestic == 1) |>
   drop_na() |>
   arrange(date) |>
   ggplot(aes(x = date, y = value)) +
@@ -134,7 +134,7 @@ shocks_list |>
     text = element_text(size = 8)
   ) +
   scale_color_manual(
-    values = pnw_palette("Sunset2", 9)
+    values = pnw_palette("Sunset2", 10)
   )
 
 # Export ---------------------------------------------------------------

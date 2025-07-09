@@ -43,59 +43,76 @@ library(parallel)
 library(tictoc)
 
 options(scien = 999)
+mem.maxVSize(v = 100000)
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 
 # Import -------------------------------------------------------------
 combined_data <- read_rds(here("Outputs", "artifacts_combined_data.rds"))
 
-combined_temp_tbl <- combined_data |>
-  pluck(1) |>
-  mutate(year = as.character(year(date)))
-combined_precip_tbl <- combined_data |>
-  pluck(2) |>
-  mutate(year = as.character(year(date)))
+combined_temp_tbl <- combined_data |> pluck(1) |>
+  mutate(year= as.character(year(date))) |>
+  janitor::clean_names()
+combined_precip_tbl <- combined_data |> pluck(2) |>
+  mutate(year= as.character(year(date))) |>
+  janitor::clean_names()
 
-# first  regressions -----------------------------------------------------------
+# Temp  regressions -----------------------------------------------------------
+## Temp ---
 formula <- as.formula("inflation_rate ~
                        lag(inflation_rate) +
-                       value:domestic +
-                       value:foreign +
-                       industry +
-                        year")
-ols <- function(formula, data, selected_country = NULL, selected_shock_type) {
-  lm(formula,
-     data |>
-       filter(country == selected_country) |>
-       filter(shock_type == selected_shock_type)) |>
-  tidy() |>
-    print(n = 100)
-}
+                       domestic_agricultural_temperature_shock +
+                       foreign_agricultural_temperature_shock +
+                       domestic_non_agricultural_temperature_shock +
+                       foreign_non_agricultural_temperature_shock +
+                      col_country +
+                      year")
 
-## Temp ---
-
-ols(formula = formula,
-    selected_country = "ZAF",
-    selected_shock_type = "Agricultural Temperature Shock",
-    data = combined_temp_tbl)
-ols(formula = formula,
-    selected_country = "ZAF",
-    selected_shock_type = "Non-Agricultural Temperature Shock",
-    data = combined_temp_tbl)
+tic()
+temp_reg_list <-
+  combined_temp_tbl |>
+  filter(!col_industry == "Communication") |>
+  group_by(col_industry) |>
+  group_map(safely( ~ {
+    lm(formula = formula, data = .x) |>
+      coeftest(vcov = vcovHC, type = "HC1") |>
+      tidy() |>
+      mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
+        p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
+      )))
+  }))
+toc()
 
 ## Precip ---
-ols(formula = formula,
-    selected_country = "ZAF",
-    selected_shock_type = "Agricultural Precipitation Shock",
-    data = combined_precip_tbl)
-ols(formula = formula,
-    selected_country = "ZAF",
-    selected_shock_type = "Non-Agricultural Precipitation Shock",
-    data = combined_precip_tbl)
+formula <- as.formula("inflation_rate ~
+                       lag(inflation_rate) +
+                       domestic_agricultural_precipitation_shock +
+                       foreign_agricultural_precipitation_shock +
+                       domestic_non_agricultural_precipitation_shock +
+                       foreign_non_agricultural_precipitation_shock +
+                      col_country +
+                      year")
+
+tic()
+precip_reg_list <-
+  combined_precip_tbl |>
+  filter(!col_industry == "Communication") |>
+  group_by(col_industry) |>
+  group_map(~ {
+    lm(formula = formula, data = .x) |>
+      coeftest(vcov = vcovHC, type = "HC1") |>
+      tidy() |>
+      mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
+        p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
+      )))
+  })
+toc()
+
 
 # Export ---------------------------------------------------------------
-artifacts_ <- list (
-
+artifacts_regressions <- list (
+  temp_regressions = temp_reg_list,
+  precip_regressions = precip_reg_list
 )
 
-write_rds(artifacts_, file = here("Outputs", "artifacts_.rds"))
+write_rds(artifacts_regressions, file = here("Outputs", "artifacts_regressions.rds"))
