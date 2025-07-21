@@ -42,6 +42,36 @@ library(tictoc)
 mem.maxVSize(100000)
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
+combined_weight_focused <- function(data){
+  data |>
+    relocate(
+      year, .before = date,
+    ) |>
+    relocate(
+      shock_type, .after = col_industry
+    ) |>
+    mutate(
+      shock_source = ifelse(domestic== 1, "Domestic", "Foreign")
+    ) |>
+    tidytable::unite(
+      "shock_type",
+      c("shock_source", "shock_type"),
+      sep = " "
+    ) |>
+    tidytable::select(-c("domestic", "foreign")) |>
+    drop_na(value) |>
+    tidytable::pivot_wider(
+      id_cols = c("date", "row_country", "row_industry", "col_country", "col_industry"),
+      names_from = shock_type,
+      values_from = value,
+      values_fn = mean,
+      values_fill = 0
+    ) |>
+    mutate(
+      direct_shock = if_else(row_country == col_country & row_industry == col_industry, 1, 0),
+      not_direct_shock = if_else(row_country != col_country | row_industry != col_industry, 1, 0)
+    )
+}
 
 # Import and clean -------------------------------------------------------------
 ## Network shocks data ---------------------------------------------------------------
@@ -70,6 +100,7 @@ inflation_rate_tbl |>
   filter(country == "ZAF" & industry == "Transport" & date >= "2016-01-01")
 
 # Combining data ---------------------------------------------------------------
+tic()
 combined_temp_data_tbl <-
   agric_temp_shocks_tbl |>
   bind_rows(non_agric_temp_shocks_tbl, .id = "shock_type") |>
@@ -83,14 +114,16 @@ combined_temp_data_tbl <-
     date,
     .before = shock_type
   ) |>
-  rename(country = col_country,
-         industry = col_industry) |>
+  mutate(year = as.character(year(date))) |>
+  combined_weight_focused() |>  # changing to weights focus
   left_join(inflation_rate_tbl,
             by = join_by(date,
-                        country,
-                        industry),
+                         col_country == country,
+                         col_industry == industry),
             relationship = "many-to-many")
+toc()
 
+tic()
 combined_precip_data_tbl <-
   agric_precip_shocks_tbl |>
   bind_rows(non_agric_precip_shocks_tbl, .id = "shock_type") |>
@@ -104,29 +137,14 @@ combined_precip_data_tbl <-
     date,
     .before = shock_type
   ) |>
-  rename(country = col_country,
-         industry = col_industry) |>
+  mutate(year = as.character(year(date))) |>
+  combined_weight_focused() |>  # changing to weights focus
   left_join(inflation_rate_tbl,
             by = join_by(date,
-                        country,
-                        industry),
+                       col_country == country,
+                        col_industry == industry),
             relationship = "many-to-many")
-
-
-combined_temp_data_tbl |> filter(
-  country == "ZAF" &
-    foreign == 1 &
-    date >= "2016-01-01" &
-    shock_type == "Non-Agricultural Temperature Shock"
-)
-
-combined_precip_data_tbl |> filter(
-  country == "ZAF" &
-    domestic == 1 &
-    date >= "2016-01-01" &
-    shock_type == "Agricultural Precipitation Shock"
-)
-
+toc()
 
 # Export ---------------------------------------------------------------
 artifacts_combined_data <- list (
