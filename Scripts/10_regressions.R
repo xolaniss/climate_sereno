@@ -56,6 +56,8 @@ combined_temp_tbl <- combined_data |> pluck(1) |>
 combined_precip_tbl <- combined_data |> pluck(2) |>
   mutate(year= as.character(year(date))) |>
   janitor::clean_names()
+combined_data |> glimpse()
+
 
 # Temp  regressions -----------------------------------------------------------
 ## Temp ---

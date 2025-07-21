@@ -34,11 +34,13 @@ library(vars)
 library(urca)
 library(mFilter)
 library(car)
+# library(plm) # clashes with base r log
 
 # Parallel processing
 library(furrr)
 library(parallel)
 library(tictoc)
+options(scipen = 999)
 
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
@@ -55,8 +57,8 @@ inflation_rate_tbl <-
   cpi_tbl |>
   group_by(country, category) |>
   mutate(
-    inflation_rate = 400*(log(cpi+ lag(cpi, 1) + lag(cpi, 2)) -
-                          log(lag(cpi, 3) + lag(cpi, 4) + lag(cpi, 5))
+    inflation_rate = 400*(base::log(cpi+ lag(cpi, 1) + lag(cpi, 2)) -
+                          base::log(lag(cpi, 3) + lag(cpi, 4) + lag(cpi, 5))
                           ) # annualized and seasonal adjusted
   ) |>
   ungroup() |>
@@ -64,7 +66,16 @@ inflation_rate_tbl <-
   mutate(
     inflation_rate = ifelse(is.infinite(inflation_rate), NA, inflation_rate),
     inflation_rate = ifelse(is.nan(inflation_rate), NA, inflation_rate)
-  )
+  ) |>
+  mutate(
+    date = as.Date(date)
+  ) |>
+  rename(
+    industry = category
+  ) |>
+  mutate(industry = str_to_title(industry)) |>
+  filter(date >= "2000-01-01" & industry != "Headline") |>
+  drop_na(inflation_rate)
 
 inflation_rate_tbl |> tail()
 inflation_rate_tbl |>
@@ -73,8 +84,8 @@ inflation_rate_tbl |>
 
 # Visualisation ----------------------------------------------------------
 inflation_rate_tbl|>
-  filter(country == "USA") |>
-  ggplot(aes(x = date, y = inflation_rate, col = category)) +
+  filter(country == "ZAF") |>
+  ggplot(aes(x = date, y = inflation_rate, col = industry)) +
   geom_line() +
   labs(
     title = "Inflation rate",
@@ -84,7 +95,11 @@ inflation_rate_tbl|>
   ) +
   theme_minimal() +
   theme(legend.position = "none") +
-  facet_wrap(~category, ncol = 3, scales = "free_y")
+  facet_wrap(~industry, ncol = 3, scales = "free_y")
+
+
+
+
 
 # Export ---------------------------------------------------------------
 artifacts_inflation_rate <- list (

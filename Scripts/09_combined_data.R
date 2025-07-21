@@ -86,15 +86,7 @@ non_agric_precip_shocks_tbl <- network_shocks |> pluck(1,4)
 
 ## Inflation data ---------------------------------------------------------------
 inflation_rate_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |>
-  pluck(1) |>
-  mutate(
-    date = as.Date(date)
-  ) |>
-  rename(
-    industry = category
-  ) |>
-  mutate(industry = str_to_title(industry)) |>
-  filter(date >= "2000-01-01" & industry != "Headline")
+  pluck(1)
 
 inflation_rate_tbl |>
   filter(country == "ZAF" & industry == "Transport" & date >= "2016-01-01")
