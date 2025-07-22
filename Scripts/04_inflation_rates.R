@@ -97,10 +97,6 @@ inflation_rate_tbl|>
   theme(legend.position = "none") +
   facet_wrap(~industry, ncol = 3, scales = "free_y")
 
-
-
-
-
 # Export ---------------------------------------------------------------
 artifacts_inflation_rate <- list (
   inflation_rate_tbl = inflation_rate_tbl

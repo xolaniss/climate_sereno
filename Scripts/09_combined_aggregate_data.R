@@ -76,7 +76,7 @@ combined_weight_focused <- function(data){
 # Import and clean -------------------------------------------------------------
 ## Network shocks data ---------------------------------------------------------------
 network_shocks <-
-  read_rds(here("Outputs", "artifacts_network_shocks.rds"))
+  read_rds(here("Outputs", "artifacts_network_shocks_average.rds"))
 
 agric_temp_shocks_tbl <- network_shocks |> pluck(1,1)
 non_agric_temp_shocks_tbl <- network_shocks |> pluck(1,2)
