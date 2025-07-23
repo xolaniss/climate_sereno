@@ -44,12 +44,12 @@ library(tictoc)
 
 options(scien = 999)
 mem.maxVSize(v = 100000)
+
 #Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
-
 reg <- function(data){
 data |>
-  filter(!col_industry == "Communication") |>
+  filter(!col_industry %in% c("Communication", "Education")) |>
   group_by(col_industry) |>
   group_map(~ {
     lm(formula = formula, data = .x) |>
@@ -58,10 +58,8 @@ data |>
       mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
         p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
       )))
-      # set_names(industry_names)
-  })
+  }) |> set_names(industry_names)
 }
-
 extract_level_data <- function(data, list_element){
   data |>
   pluck(list_element) |>
@@ -113,16 +111,16 @@ industry_names <-
   c(
   "Agrifood",
   "Clothing",
-  "Education",
+  # "Education", # same as health
   "Energy",
   "Health",
   "Hotels",
-  "Household_goods",
+  "Household Goods",
   "Housing",
   "Transport"
 )
 
-## Temp formula
+## Temp formula ----
 formula <- as.formula("inflation_rate ~
                        lag(inflation_rate) +
                        domestic_agricultural_temperature_shock +
@@ -132,33 +130,21 @@ formula <- as.formula("inflation_rate ~
                       col_country +
                       year")
 
-## Temp 5% level ---
-tic("Regressions at 5% level")
-temp_baseline_5_reg_list <-
-  temp_baseline_5_tbl |>
-  reg()
+## Data list for mapping ----
+temp_list <- list(
+  temp_baseline_5_tbl = temp_baseline_5_tbl,
+  temp_baseline_10_tbl = temp_baseline_10_tbl,
+  temp_baseline_90_tbl = temp_baseline_90_tbl,
+  temp_baseline_95_tbl = temp_baseline_95_tbl
+)
+
+
+## Temp regression ----
+tic("Regressions at different temperature thresholds")
+temp_reg_list <- temp_list |> map(~reg(.x))
 toc()
 
-## Temp 10% level ---
-tic("Regressions at 10% level")
-temp_baseline_10_reg_list <-
-  temp_baseline_5_tbl |>
-  reg()
-toc()
-
-## Temp 90% level ---
-tic("Regressions at 90% level")
-temp_baseline_90_reg_list <-
-  temp_baseline_5_tbl |>
-  reg()
-toc()
-
-## Temp 95% level ---
-tic("Regressions at 95% level")
-temp_baseline_95_reg_list <-
-  temp_baseline_95_tbl |>
-  reg()
-toc()
+# Precip regressions -----------------------------------------------------------
 
 ## Precip formula ---
 formula <- as.formula("inflation_rate ~
@@ -170,45 +156,28 @@ formula <- as.formula("inflation_rate ~
                       col_country +
                       year")
 
-## 5% level precip ----
-tic("Regressions at 5% level precip")
-precip_baseline_5_reg_list <-
-  precip_baseline_5_tbl |>
-  reg()
-toc()
+## Data list for mapping ----
+precip_list <- list(
+  precip_baseline_5_tbl = precip_baseline_5_tbl,
+  precip_baseline_10_tbl = precip_baseline_10_tbl,
+  precip_baseline_90_tbl = precip_baseline_90_tbl,
+  precip_baseline_95_tbl = precip_baseline_95_tbl
+)
 
-## 10% level precip ----
-tic("Regressions at 10% level precip")
-precip_baseline_10_reg_list <-
-  precip_baseline_5_tbl |>
-  reg()
-toc()
-
-## 90% level precip ----
-tic("Regressions at 90% level precip")
-precip_baseline_90_reg_list <-
-  precip_baseline_5_tbl |>
-  reg()
-toc()
-
-## 95% level precip ----
-tic("Regressions at 95% level precip")
-precip_baseline_95_reg_list <-
-  precip_baseline_95_tbl |>
-  reg()
+## Precip regressions ----
+tic("Regressions at different precipitation thresholds")
+precip_reg_list <- precip_list |> map(~reg(.x))
 toc()
 
 
 # Export -------------------------------------------------------------
 artifacts_regressions <- list(
-  temp_baseline_5_reg_list = temp_baseline_5_reg_list,
-  temp_baseline_10_reg_list = temp_baseline_10_reg_list,
-  temp_baseline_90_reg_list = temp_baseline_90_reg_list,
-  temp_baseline_95_reg_list = temp_baseline_95_reg_list,
-  precip_baseline_5_reg_list = precip_baseline_5_reg_list,
-  precip_baseline_10_reg_list = precip_baseline_10_reg_list,
-  precip_baseline_90_reg_list = precip_baseline_90_reg_list,
-  precip_baseline_95_reg_list = precip_baseline_95_reg_list
+  data = list(
+    temp_list = temp_list,
+    precip_list = precip_list
+  ),
+  temp_regressions = temp_reg_list,
+  precip_regressions = precip_reg_list
 )
 
 write_rds(artifacts_regressions, here("Outputs", "artifacts_baseline_regressions.rds"))
