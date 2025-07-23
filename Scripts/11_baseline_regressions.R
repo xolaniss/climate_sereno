@@ -57,8 +57,8 @@ data |>
       tidy() |>
       mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
         p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
-      )))  |>
-      set_names(industry_names)
+      )))
+      # set_names(industry_names)
   })
 }
 
@@ -70,20 +70,42 @@ extract_level_data <- function(data, list_element){
 }
 
 # Import -------------------------------------------------------------
-combined_data <- read_rds(here("Outputs", "artifacts_combined_extremes_data.rds"))
+combined_data <- read_rds(here("Outputs", "artifacts_combined_baseline_data.rds"))
 
-combined_temp_baseline_5_tbl <-
+# Extracting data at different levels ---------------------------------------
+## Temp ----
+temp_baseline_5_tbl <-
   combined_data |>
   extract_level_data(1)
-combined_temp_baseline_95_tbl <-
+
+temp_baseline_10_tbl <-
   combined_data |>
   extract_level_data(2)
-combined_precip_baseline_5_tbl <-
+
+temp_baseline_90_tbl <-
   combined_data |>
   extract_level_data(3)
-combined_precip_baseline_95_tbl <-
+
+temp_baseline_95_tbl <-
   combined_data |>
   extract_level_data(4)
+
+## Precip ----
+precip_baseline_5_tbl <-
+  combined_data |>
+  extract_level_data(5)
+
+precip_baseline_10_tbl <-
+  combined_data |>
+  extract_level_data(6)
+
+precip_baseline_90_tbl <-
+  combined_data |>
+  extract_level_data(7)
+
+precip_baseline_95_tbl <-
+  combined_data |>
+  extract_level_data(8)
 
 
 # Temp  regressions -----------------------------------------------------------
@@ -100,8 +122,7 @@ industry_names <-
   "Transport"
 )
 
-
-## Temp 5% level ---
+## Temp formula
 formula <- as.formula("inflation_rate ~
                        lag(inflation_rate) +
                        domestic_agricultural_temperature_shock +
@@ -111,22 +132,35 @@ formula <- as.formula("inflation_rate ~
                       col_country +
                       year")
 
-tic()
+## Temp 5% level ---
+tic("Regressions at 5% level")
 temp_baseline_5_reg_list <-
-  combined_temp_baseline_5_tbl |>
+  temp_baseline_5_tbl |>
   reg()
 toc()
 
+## Temp 10% level ---
+tic("Regressions at 10% level")
+temp_baseline_10_reg_list <-
+  temp_baseline_5_tbl |>
+  reg()
+toc()
+
+## Temp 90% level ---
+tic("Regressions at 90% level")
+temp_baseline_90_reg_list <-
+  temp_baseline_5_tbl |>
+  reg()
+toc()
 
 ## Temp 95% level ---
-tic()
+tic("Regressions at 95% level")
 temp_baseline_95_reg_list <-
-  combined_temp_baseline_95_tbl |>
+  temp_baseline_95_tbl |>
   reg()
 toc()
 
-
-## 5% level precip ----
+## Precip formula ---
 formula <- as.formula("inflation_rate ~
                        lag(inflation_rate) +
                        domestic_agricultural_precipitation_shock +
@@ -136,16 +170,47 @@ formula <- as.formula("inflation_rate ~
                       col_country +
                       year")
 
-
-tic()
+## 5% level precip ----
+tic("Regressions at 5% level precip")
 precip_baseline_5_reg_list <-
-  combined_precip_baseline_5_tbl |>
+  precip_baseline_5_tbl |>
+  reg()
+toc()
+
+## 10% level precip ----
+tic("Regressions at 10% level precip")
+precip_baseline_10_reg_list <-
+  precip_baseline_5_tbl |>
+  reg()
+toc()
+
+## 90% level precip ----
+tic("Regressions at 90% level precip")
+precip_baseline_90_reg_list <-
+  precip_baseline_5_tbl |>
   reg()
 toc()
 
 ## 95% level precip ----
-tic()
+tic("Regressions at 95% level precip")
 precip_baseline_95_reg_list <-
-  combined_precip_baseline_95_tbl |>
+  precip_baseline_95_tbl |>
   reg()
 toc()
+
+
+# Export -------------------------------------------------------------
+artifacts_regressions <- list(
+  temp_baseline_5_reg_list = temp_baseline_5_reg_list,
+  temp_baseline_10_reg_list = temp_baseline_10_reg_list,
+  temp_baseline_90_reg_list = temp_baseline_90_reg_list,
+  temp_baseline_95_reg_list = temp_baseline_95_reg_list,
+  precip_baseline_5_reg_list = precip_baseline_5_reg_list,
+  precip_baseline_10_reg_list = precip_baseline_10_reg_list,
+  precip_baseline_90_reg_list = precip_baseline_90_reg_list,
+  precip_baseline_95_reg_list = precip_baseline_95_reg_list
+)
+
+write_rds(artifacts_regressions, here("Outputs", "artifacts_baseline_regressions.rds"))
+
+
