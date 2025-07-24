@@ -47,24 +47,24 @@ mem.maxVSize(v = 100000)
 
 #Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
-reg <- function(data){
-data |>
-  filter(!col_industry %in% c("Communication", "Education")) |>
-  group_by(col_industry) |>
-  group_map(~ {
-    lm(formula = formula, data = .x) |>
-      coeftest(vcov = vcovHC, type = "HC1") |>
-      tidy() |>
-      mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
-        p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
-      )))
-  }) |> set_names(industry_names)
-}
-extract_level_data <- function(data, list_element){
+reg <- function(data) {
   data |>
-  pluck(list_element) |>
-  mutate(year= as.character(year(date))) |>
-  janitor::clean_names()
+    filter(!col_industry %in% c("Communication", "Education")) |>
+    group_by(col_industry) |>
+    group_map( ~ {
+      lm(formula = formula, data = .x) |>
+        coeftest(vcov = vcovHC, type = "HC1") |>
+        tidy() |>
+        mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
+          p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
+        )))
+    }) |> set_names(industry_names)
+}
+extract_level_data <- function(data, list_element) {
+  data |>
+    pluck(list_element) |>
+    mutate(year = as.character(year(date))) |>
+    janitor::clean_names()
 }
 
 # Import -------------------------------------------------------------
@@ -109,26 +109,28 @@ precip_baseline_95_tbl <-
 # Temp  regressions -----------------------------------------------------------
 industry_names <-
   c(
-  "Agrifood",
-  "Clothing",
-  # "Education", # same as health
-  "Energy",
-  "Health",
-  "Hotels",
-  "Household Goods",
-  "Housing",
-  "Transport"
-)
+    "Agrifood",
+    "Clothing",
+    # "Education", # same as health
+    "Energy",
+    "Health",
+    "Hotels",
+    "Household Goods",
+    "Housing",
+    "Transport"
+  )
 
 ## Temp formula ----
-formula <- as.formula("inflation_rate ~
+formula <- as.formula(
+  "inflation_rate ~
                        lag(inflation_rate) +
                        domestic_agricultural_temperature_shock +
                        foreign_agricultural_temperature_shock +
                        domestic_non_agricultural_temperature_shock +
                        foreign_non_agricultural_temperature_shock +
                       col_country +
-                      year")
+                      year"
+)
 
 ## Data list for mapping ----
 temp_list <- list(
@@ -141,20 +143,22 @@ temp_list <- list(
 
 ## Temp regression ----
 tic("Regressions at different temperature thresholds")
-temp_reg_list <- temp_list |> map(~reg(.x))
+temp_reg_list <- temp_list |> map( ~ reg(.x))
 toc()
 
 # Precip regressions -----------------------------------------------------------
 
 ## Precip formula ---
-formula <- as.formula("inflation_rate ~
+formula <- as.formula(
+  "inflation_rate ~
                        lag(inflation_rate) +
                        domestic_agricultural_precipitation_shock +
                        foreign_agricultural_precipitation_shock +
                        domestic_non_agricultural_precipitation_shock +
                        foreign_non_agricultural_precipitation_shock +
                       col_country +
-                      year")
+                      year"
+)
 
 ## Data list for mapping ----
 precip_list <- list(
@@ -166,20 +170,18 @@ precip_list <- list(
 
 ## Precip regressions ----
 tic("Regressions at different precipitation thresholds")
-precip_reg_list <- precip_list |> map(~reg(.x))
+precip_reg_list <- precip_list |> map( ~ reg(.x))
 toc()
 
 
 # Export -------------------------------------------------------------
-artifacts_regressions <- list(
-  data = list(
-    temp_list = temp_list,
-    precip_list = precip_list
-  ),
-  temp_regressions = temp_reg_list,
-  precip_regressions = precip_reg_list
-)
+artifacts_regressions <- list(temp_regressions = temp_reg_list, precip_regressions = precip_reg_list)
 
-write_rds(artifacts_regressions, here("Outputs", "artifacts_baseline_regressions.rds"))
+write_rds(artifacts_regressions,
+          here("Outputs", "artifacts_baseline_regressions.rds"))
 
+artifacts_reg_data <- list(temp_list = temp_list, precip_list = precip_list)
+
+write_rds(artifacts_reg_data,
+          here("Outputs", "artifacts_baseline_reg_data.rds"))
 
