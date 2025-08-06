@@ -46,6 +46,17 @@ source(here("Functions", "fx_plot.R"))
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 source(here("Functions", "reg.R"))
+shock_standardise <- function(list, type) {
+  list |>
+    map(~ {
+      .x |>
+        group_by(col_industry) |>
+        mutate(across(
+          .cols = contains(type),
+          .fns = ~ (.x - mean(.x, na.rm = TRUE)) / sd(.x, na.rm = TRUE)
+        ))
+    })
+}
 
 # Import -------------------------------------------------------------
 combined_data <- read_rds(here("Outputs", "artifacts_baseline_reg_data.rds"))
@@ -54,24 +65,58 @@ precip_list <- combined_data |> pluck(2)
 industry_names <- combined_data |> pluck(3)
 
 
+# Shock standardisation -----------------------------------------------------------------
+standardised_temp_list <-
+  temp_list |>
+  shock_standardise(type = "temperature")
 
-# Cleaning -----------------------------------------------------------------
+standardised_precip_list <-
+  precip_list |>
+  shock_standardise(type = "precipitation")
 
+# standardised shock regressions ------------------------------------------------
+## Temp formula -----
+formula <- as.formula(
+  "inflation_rate ~
+                       lag(inflation_rate) +
+                       domestic_agricultural_temperature_shock +
+                       foreign_agricultural_temperature_shock +
+                       domestic_non_agricultural_temperature_shock +
+                       foreign_non_agricultural_temperature_shock +
+                      col_country +
+                      year"
+)
 
-# Transformations --------------------------------------------------------
+## Run standardised temp shocks regression ----
+tic("standardised temp regressions")
+temp_reg_list <- temp_list |> map( ~ reg(.x))
+toc()
 
+## Precip formula -----
+formula<- as.formula(
+  "inflation_rate ~
+                       lag(inflation_rate) +
+                       domestic_agricultural_precipitation_shock +
+                       foreign_agricultural_precipitation_shock +
+                       domestic_non_agricultural_precipitation_shock +
+                       foreign_non_agricultural_precipitation_shock +
+                      col_country +
+                      year"
+)
 
-# EDA ---------------------------------------------------------------
-
-
-# Graphing ---------------------------------------------------------------
+## Run standardised precip shocks regression ----
+tic("standardised precip regressions")
+precip_reg_list <- precip_list |> map( ~ reg(.x))
+toc()
 
 
 # Export ---------------------------------------------------------------
-artifacts_ <- list (
-
+artifacts_standardised_shocks <- list (
+  temp_reg_list = temp_reg_list,
+  precip_reg_list = precip_reg_list
 )
 
-write_rds(artifacts_, file = here("Outputs", "artifacts_.rds"))
+write_rds(artifacts_standardised_shocks, file =
+            here("Outputs", "artifacts_standardised_shocks.rds"))
 
 

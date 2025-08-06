@@ -62,7 +62,7 @@ industry_names <-
     "Transport"
   )
 
-# Inflation seasonality (11 lags) ------
+# Inflation seasonality (3 lags) regressions ------
 ## Temp inflation seasonality formula -----
 formula <- as.formula(
   "inflation_rate ~
