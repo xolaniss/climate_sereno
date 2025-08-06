@@ -84,7 +84,7 @@ climate_data_tbl |> skim()
 # Calculating anomalies ---------------------------------------------------------------
 rolling_mean = slidify(
   .f = mean,
-  .period = 12,
+  .period = 60,
   .align = "right",
   .partial = TRUE
 )
