@@ -112,6 +112,8 @@ toc()
 
 # Export ---------------------------------------------------------------
 artifacts_standardised_shocks <- list (
+  standardised_temp_list = standardised_temp_list,
+  standardised_precip_list = standardised_precip_list,
   temp_reg_list = temp_reg_list,
   precip_reg_list = precip_reg_list
 )
