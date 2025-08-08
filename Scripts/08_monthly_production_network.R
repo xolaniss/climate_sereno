@@ -45,7 +45,7 @@ mem.maxVSize(100000)
 source(here("Functions", "fx_plot.R"))
 
 # Import -------------------------------------------------------------
-eora_tbl <- read_rds(here("Outputs", "artifacts_eoro26.rds")) |>
+eora_tbl <- qd_read(here("Outputs", "artifacts_eoro26.qs2")) |>
   pluck(1)
 eora_tbl |> distinct(row_country)
 # Expanding to monthly frequency ------------------------------------------
@@ -92,28 +92,6 @@ eora_monthly_tbl <-
   bind_rows(eora_monthly_downstream_tbl) |>
   arrange(country) |>
   rename(row_country = country)
-
-## Pivoting longer -------------------------------------------------------
-# tic()
-# eora_monthly_long_tbl <-
-#   eora_monthly_tbl |>
-#   # pivot_longer using tidytable
-#   tidytable::pivot_longer(
-#     cols = -c(date, row_country, row_industry),
-#     names_to = "col_country",
-#     values_to = "shares"
-#   ) |>
-#   tidytable::separate(col = "col_country",
-#                       into = c("col_country", "col_industry"),
-#                       sep = "[A-Z]{3}_")
-#   dplyr::select(date,
-#                 row_country,
-#                 row_industry,
-#                 col_country,
-#                 col_industry,
-#                 shares) |>
-#   as_tibble()
-# toc()
 
 
 # Export ---------------------------------------------------------------

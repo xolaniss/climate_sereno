@@ -82,8 +82,8 @@ plan(sequential)
 artifacts_eoro26 <- list (
   combined_aggregated_shares_tbl = combined_aggregated_shares_tbl
 )
-write_rds(artifacts_eoro26,
-          file = here("Outputs", "artifacts_eoro26.rds"))
+qd_save(artifacts_eoro26,
+          file = here("Outputs", "artifacts_eoro26.qs2"))
 
 
 
