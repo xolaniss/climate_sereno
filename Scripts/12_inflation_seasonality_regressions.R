@@ -40,27 +40,18 @@ library(furrr)
 library(parallel)
 library(tictoc)
 
+# loading data
+library(qs2)
+
 # Functions ---------------------------------------------------------------
 source(here("Functions", "fx_plot.R"))
 source(here("Functions", "reg.R"))
 
 # Import -------------------------------------------------------------
-combined_data <- read_rds(here("Outputs", "artifacts_baseline_reg_data.rds"))
+combined_data <- qd_read(here("Outputs", "artifacts_baseline_reg_data.qs2"))
 temp_list <- combined_data |> pluck(1)
 precip_list <- combined_data |> pluck(2)
-
-industry_names <-
-  c(
-    "Agrifood",
-    "Clothing",
-    # "Education", # same as health
-    "Energy",
-    "Health",
-    "Hotels",
-    "Household Goods",
-    "Housing",
-    "Transport"
-  )
+industry_names <- combined_data |> pluck(3)
 
 # Inflation seasonality (3 lags) regressions ------
 ## Temp inflation seasonality formula -----
@@ -107,8 +98,7 @@ toc()
 # Export ---------------------------------------------------------------
 artifacts_inflation_seasonality_regs <- list (
   temp_reg_list = temp_reg_list,
-  precip_reg_list = precip_reg_list,
-  industry_names = industry_names
+  precip_reg_list = precip_reg_list
 )
 
 write_rds(artifacts_inflation_seasonality_regs, file = here("Outputs", "artifacts_inflation_seasonality_regs.rds"))

@@ -43,7 +43,12 @@ library(tictoc)
 source(here("Functions", "fx_plot.R"))
 
 # Import -------------------------------------------------------------
-
+combined_data <- qd_read(here("Outputs", "artifacts_baseline_reg_data.qs2"))
+temp_list <- combined_data |> pluck(1)
+precip_list <- combined_data |> pluck(2)
+industry_names <- combined_data |> pluck(3)
+hemisphere_tbl <- read_rds(here("Outputs", "artifacts_controls_prep.rds")) |>
+  pluck(1)
 
 # Cleaning -----------------------------------------------------------------
 

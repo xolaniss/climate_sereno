@@ -42,6 +42,9 @@ library(furrr)
 library(parallel)
 library(tictoc)
 
+# loading
+library(qs2)
+
 options(scien = 999)
 mem.maxVSize(v = 100000)
 
@@ -175,13 +178,18 @@ toc()
 
 
 # Export -------------------------------------------------------------
-artifacts_regressions <- list(temp_regressions = temp_reg_list, precip_regressions = precip_reg_list)
+artifacts_regressions <- list(
+  temp_regressions = temp_reg_list,
+  precip_regressions = precip_reg_list
+  )
 
 write_rds(artifacts_regressions,
           here("Outputs", "artifacts_baseline_regressions.rds"))
 
-artifacts_reg_data <- list(temp_list = temp_list, precip_list = precip_list)
+artifacts_reg_data <- list(
+  temp_list = temp_list,
+  precip_list = precip_list,
+  industry_names = industry_names
+  )
 
-write_rds(artifacts_reg_data,
-          here("Outputs", "artifacts_baseline_reg_data.rds"))
-
+qd_save(artifacts_reg_data, "Outputs/artifacts_baseline_reg_data.qs2")

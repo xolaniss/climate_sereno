@@ -16,6 +16,7 @@ library(pins)
 library(timetk)
 library(uniqtag)
 library(quantmod)
+library(qs2)
 
 # graphs
 library(PNWColors)
@@ -120,7 +121,7 @@ extreme_combine_precip <- function(agric_data, non_agric_data){
 # Import  -------------------------------------------------------------
 ## Network shocks data ----
 network_shocks <-
-  read_rds(here("Outputs", "artifacts_network_shocks_extremes.rds"))
+  qd_read(here("Outputs", "artifacts_network_shocks_extremes.qs2"))
 
 ## Inflation data ---------------------------------------------------------------
 inflation_rate_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |>
@@ -231,5 +232,5 @@ artifacts_combined_data <- list (
 
 )
 
-write_rds(artifacts_combined_data, file = here("Outputs",
-                                               "artifacts_combined_baseline_data.rds"))
+qd_save(artifacts_combined_data, file = here("Outputs",
+                                               "artifacts_combined_baseline_data.qs2"))

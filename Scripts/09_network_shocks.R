@@ -19,6 +19,7 @@ library(pins)
 library(timetk)
 library(uniqtag)
 library(quantmod)
+library(qs2)
 
 # graphs
 library(PNWColors)
@@ -41,6 +42,7 @@ library(car)
 library(furrr)
 library(parallel)
 library(tictoc)
+
 
 options(scipen = 999)
 mem.maxVSize(100000)
@@ -129,8 +131,8 @@ multi_sec_extreme_anomaly <- function(args, list_names) {
 }
 
 # Import -------------------------------------------------------------
-input_output_tbl <- read_rds(here("Outputs",
-                                  "artifacts_monthly_production_network.rds")) |>
+input_output_tbl <- qd_read(here("Outputs",
+                                  "artifacts_monthly_production_network.qs2")) |>
   pluck(1)
 
 climate_shocks_tbl <- read_rds(here("Outputs", "artifacts_climate_shocks.rds")) |>
@@ -299,8 +301,8 @@ artifacts_network_shocks_average <- list (
   shocks_list = shocks_list
 )
 
-write_rds(artifacts_network_shocks_average,
-          file = here("Outputs", "artifacts_network_shocks_average.rds"))
+qd_save(artifacts_network_shocks_average,
+          file = here("Outputs", "artifacts_network_shocks_average.qs2"))
 
 artifacts_network_shocks_extremes <- list(
   shocks_list_5 = shocks_list_5,
@@ -309,5 +311,5 @@ artifacts_network_shocks_extremes <- list(
   shocks_list_90 = shocks_list_90
 )
 
-write_rds(artifacts_network_shocks_extremes,
-          file = here("Outputs", "artifacts_network_shocks_extremes.rds"))
+qd_save(artifacts_network_shocks_extremes,
+          file = here("Outputs", "artifacts_network_shocks_extremes.qs2"))

@@ -19,6 +19,7 @@ library(uniqtag)
 library(quantmod)
 library(data.table)
 library(tidyfast)
+library(qs2)
 
 # graphs
 library(PNWColors)
@@ -120,6 +121,6 @@ artifacts_monthly_production_network <- list (
   eora_monthly_tbl = eora_monthly_tbl
 )
 
-write_rds(artifacts_monthly_production_network,
-          file = here("Outputs", "artifacts_monthly_production_network.rds"))
+qd_save(artifacts_monthly_production_network,
+          file = here("Outputs", "artifacts_monthly_production_network.qs2"))
 

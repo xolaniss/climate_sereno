@@ -59,7 +59,7 @@ shock_standardise <- function(list, type) {
 }
 
 # Import -------------------------------------------------------------
-combined_data <- read_rds(here("Outputs", "artifacts_baseline_reg_data.rds"))
+combined_data <- qd_read(here("Outputs", "artifacts_baseline_reg_data.qs2"))
 temp_list <- combined_data |> pluck(1)
 precip_list <- combined_data |> pluck(2)
 industry_names <- combined_data |> pluck(3)
@@ -111,14 +111,19 @@ toc()
 
 
 # Export ---------------------------------------------------------------
-artifacts_standardised_shocks <- list (
-  standardised_temp_list = standardised_temp_list,
-  standardised_precip_list = standardised_precip_list,
+artifacts_standardised_shocks_regs <- list (
   temp_reg_list = temp_reg_list,
   precip_reg_list = precip_reg_list
 )
 
-write_rds(artifacts_standardised_shocks, file =
-            here("Outputs", "artifacts_standardised_shocks.rds"))
+write_rds(artifacts_standardised_shocks_regs, file =
+            here("Outputs", "artifacts_standardised_shocks_regs.rds"))
 
+artifacts_standardised_shocks_data <- list(
+  standardised_temp_list = standardised_temp_list,
+  standardised_precip_list = standardised_precip_list
+)
+
+qd_save(artifacts_standardised_shocks_data,
+        here("Outputs", "artifacts_standardised_shocks_data.qs2"))
 
