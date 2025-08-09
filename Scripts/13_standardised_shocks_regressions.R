@@ -16,7 +16,7 @@ library(pins)
 library(timetk)
 library(uniqtag)
 library(quantmod)
-
+library(qs2)
 # graphs
 library(PNWColors)
 library(patchwork)
