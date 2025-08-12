@@ -21,4 +21,10 @@ gc() # clean memory
 source(here("Scripts", "10_combined_baseline_data.R"))
 gc() # clean memory
 source(here("Scripts", "11_baseline_regressions.R"))
+source(here("Scripts", "12_inflation_seasonality_regressions.R"))
+source(here("Scripts", "13_standardised_shocks_regressions.R"))
+source(here("Scripts", "14_controls_prep.R"))
+source(here("Scripts", "15_seasons_regs.R"))
+source(here("Scripts", "16_income_classification_regs.R"))
+source(here("Scripts", "17_inflation_targeting_regs.R"))
 
