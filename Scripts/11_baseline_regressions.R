@@ -58,6 +58,11 @@ reg <- function(data) {
       lm(formula = formula, data = .x) |>
         coeftest(vcov = vcovHC, type = "HC1") |>
         tidy() |>
+        slice_head(n = 5) |>
+        mutate(
+          conf.low = estimate - 1.96 * std.error,
+          conf.high = estimate + 1.96 * std.error,
+        ) |>
         mutate(stars = ifelse(p.value < 0.01, "***", ifelse(
           p.value < 0.05, "**", ifelse(p.value < 0.1, "*", "")
         )))

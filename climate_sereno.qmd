@@ -651,6 +651,7 @@ bind_rows(
   inflation_stationarity_tbl,
   climate_stationarity_tbl
   ) |> 
+  rename(" " = variable) |> 
   flextable_word() |> 
   align(align = "left", part = "all") |> 
   align(align = "center", j = c("Statistic", "p-value"), part = "all") |> 
