@@ -71,7 +71,7 @@ extract_level_data <- function(data, list_element) {
 }
 
 # Import -------------------------------------------------------------
-combined_data <- read_rds(here("Outputs", "artifacts_combined_baseline_data.rds"))
+combined_data <- qd_read(here("Outputs", "artifacts_combined_baseline_data.qs2"))
 
 # Extracting data at different levels ---------------------------------------
 ## Temp ----
