@@ -295,9 +295,9 @@ inflation_tbl <- read_rds(here("Outputs", "artifacts_inflation_rate.rds")) |>
 
 inflation_summary_tbl <- 
   inflation_tbl |>
-  filter(category == "headline") |>
+  filter(industry == "Headline") |>
   drop_na(inflation_rate) |>
-  group_by(category) |>
+  group_by(industry) |>
   summarise(
     Mean = mean(inflation_rate, na.rm = TRUE),
     SD = sd(inflation_rate, na.rm = TRUE),
@@ -308,9 +308,9 @@ inflation_summary_tbl <-
 
 inflation_sector_summary_tbl <- 
   inflation_tbl |>
-  filter(category != "headline") |>
+  filter(industry != "Headline") |>
   drop_na(inflation_rate) |>
-  group_by(category) |>
+  group_by(industry) |>
   summarise(
     Mean = mean(inflation_rate, na.rm = TRUE),
     SD = sd(inflation_rate, na.rm = TRUE),
@@ -323,7 +323,7 @@ inflation_sector_summary_tbl <-
 inflation_summary_tbl |>
   bind_rows(inflation_sector_summary_tbl)|>
   rename(
-    "Sector" = category,
+    "Sector" = industry,
     "Mean" = Mean,
     "Standard Deviation" = SD,
     "Minimum" = Min,
@@ -365,10 +365,10 @@ inflation_summary_tbl |>
 library(countrycode)
 
 inflation_tbl |>
-  filter(category != "headline") |>
+  filter(industry != "Hseadline") |>
   mutate(country = countrycode(country, "iso3c", "country.name")) |>
   drop_na() |> 
-  group_by(country) |>
+  group_by(country) |>  
   count() |> 
   rename(    
     "Country" = country,
@@ -582,4 +582,79 @@ tribble(
 
 ```
 
+\newpage
 
+## Stationarity tests
+
+```{r}
+#| label: tbl-stationarity_tests
+#| tbl-cap: "Im-Pesaran-Shin unit-root test for main variables"
+#| ft.arraystretch: 0.6
+#| ft.font.size: 10
+
+inflation_stationarity_list <- read_rds(here("Outputs", "artifacts_inflation_stationarity.rds")) |> 
+  pluck(1)
+climate_shocks_stationarity_list <- read_rds(here("Outputs", "artifacts_shocks_stationarity.rds")) |> 
+  pluck(1)
+
+inflation_stationarity_tbl <- 
+  tibble(
+    "variable" = "Inflation rate",
+    "Statistic" = inflation_stationarity_list$statistic$statistic,
+    "p-value" = inflation_stationarity_list$statistic$p.value
+  )
+
+climate_statistics_tbl <- 
+  climate_shocks_stationarity_list |> 
+  map(~ .x$statistic$statistic) |> 
+  unlist() |> 
+  round(2) |> 
+  as_tibble()
+
+climate_pvalues_tbl <-
+  climate_shocks_stationarity_list |> 
+  map(~ .x$statistic$p.value) |> 
+  unlist() |> 
+  as_tibble()
+
+climate_stationarity_tbl <- 
+  bind_cols(
+  climate_statistics_tbl,
+  climate_pvalues_tbl
+) |> 
+  rename(
+    "Statistic" = value...1,
+    "p-value" = value...2
+  ) |> 
+  mutate(
+    variable = c(
+      # Population
+      "Abnormally cold temperature shock (1st percentile)",
+      "Abnormally hot temperature shock (99th percentile)",
+      "Abnormally cold temperature shock (5th percentile)",
+      "Abnormally hot temperature shock (95th percentile)",
+      "Abnormally cold temperature shock (10th percentile)",
+      "Abnormally hot temperature shock (90th percentile)",
+      
+      # precipitation
+      "Abnormally dry precipitation shock (1st percentile)",
+      "Abnormally wet precipitation shock (99th percentile)",
+      "Abnormally dry precipitation shock (5th percentile)",
+      "Abnormally wet precipitation shock (95th percentile)",
+      "Abnormally dry precipitation shock (10th percentile)",
+      "Abnormally wet precipitation shock (90th percentile)"
+    )
+  ) |> 
+  relocate(variable, .before = Statistic) 
+
+bind_rows(
+  inflation_stationarity_tbl,
+  climate_stationarity_tbl
+  ) |> 
+  flextable_word() |> 
+  align(align = "left", part = "all") |> 
+  align(align = "center", j = c("Statistic", "p-value"), part = "all") |> 
+  colformat_double(j = c("Statistic", "p-value"), digits = 2) |> 
+  autofit(add_w = 0.8)
+
+```

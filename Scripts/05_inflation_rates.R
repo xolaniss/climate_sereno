@@ -74,7 +74,7 @@ inflation_rate_tbl <-
     industry = category
   ) |>
   mutate(industry = str_to_title(industry)) |>
-  filter(date >= "2000-01-01" & industry != "Headline") |>
+  filter(date >= "2000-01-01") |>
   drop_na(inflation_rate)
 
 inflation_rate_tbl |> tail()
