@@ -1,5 +1,5 @@
 reg <-
-function(data, rows_keep = 5) {
+function(data, rows_keep) {
   data |>
     filter(!col_industry %in% c("Communication", "Education")) |>
     group_by(col_industry) |>

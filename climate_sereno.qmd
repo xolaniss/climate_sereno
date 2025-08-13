@@ -259,6 +259,20 @@ To test whether sectoral market competition/concentration influences the extent 
 
 # Results
 
+```{r}
+
+
+read_rds(here("Outputs", "artifacts_baseline_regressions.rds")) |> 
+  pluck(1, 1, 1) |> 
+  modelplot()
+
+
+
+
+```
+
+
+
 
 # Conclusion
 

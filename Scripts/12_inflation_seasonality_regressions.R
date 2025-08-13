@@ -71,7 +71,7 @@ formula <- as.formula(
 ## Run inflation seasonality and temp shock regression ----
 
 tic("Temp regressions at different inflation seasonality lags")
-temp_reg_list <- temp_list |> map( ~ reg(.x))
+temp_reg_list <- temp_list |> map( ~ reg(.x, rows_keep = 8))
 toc()
 
 
@@ -91,7 +91,7 @@ formula <- as.formula(
 
 ## Run inflation seasonality and precip shock regression ----
 tic("Precip shock regressions at different inflation seasonality lags")
-precip_reg_list <- precip_list |> map( ~ reg(.x))
+precip_reg_list <- precip_list |> map( ~ reg(.x, rows_keep = 8))
 toc()
 
 

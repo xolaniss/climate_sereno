@@ -89,7 +89,7 @@ formula <- as.formula(
 
 ## Run standardised temp shocks regression ----
 tic("standardised temp regressions")
-temp_reg_list <- temp_list |> map( ~ reg(.x))
+temp_reg_list <- temp_list |> map( ~ reg(.x, rows_keep = 6))
 toc()
 
 ## Precip formula -----
@@ -100,13 +100,13 @@ formula<- as.formula(
                        foreign_agricultural_precipitation_shock +
                        domestic_non_agricultural_precipitation_shock +
                        foreign_non_agricultural_precipitation_shock +
-                      col_country +
-                      year"
+                       col_country +
+                       year"
 )
 
 ## Run standardised precip shocks regression ----
 tic("standardised precip regressions")
-precip_reg_list <- precip_list |> map( ~ reg(.x))
+precip_reg_list <- precip_list |> map( ~ reg(.x, rows_keep = 6))
 toc()
 
 

@@ -58,7 +58,7 @@ reg <- function(data) {
       lm(formula = formula, data = .x) |>
         coeftest(vcov = vcovHC, type = "HC1") |>
         tidy() |>
-        slice_head(n = 5) |>
+        slice_head(n = 6) |>
         mutate(
           conf.low = estimate - 1.96 * std.error,
           conf.high = estimate + 1.96 * std.error,
