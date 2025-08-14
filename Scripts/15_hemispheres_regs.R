@@ -1,5 +1,5 @@
 # Description
-# Season analysis - Xolani Sibande 25 August 2025
+# Hemisphere seasons analysis - Xolani Sibande 25 August 2025
 # Preliminaries -----------------------------------------------------------
 # core
 library(tidyverse)
@@ -90,7 +90,7 @@ formula <- as.formula(
     year")
 
 tic("hemisphere temp regressions")
-temp_hemisphere_reg_list <- temp_hemisphere_list |> map( ~ reg(.x))
+temp_hemisphere_reg_list <- temp_hemisphere_list |> map( ~ reg(.x, rows_keep = 8))
 toc()
 
 
@@ -107,7 +107,7 @@ formula <- as.formula(
     year")
 
 tic("hemisphere precip regressions")
-precip_hemisphere_reg_list <- precip_hemisphere_list |> map( ~ reg(.x))
+precip_hemisphere_reg_list <- precip_hemisphere_list |> map( ~ reg(.x, rows_keep = 8))
 toc()
 
 

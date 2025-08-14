@@ -84,7 +84,7 @@ formula <- as.formula(
 tic("Temperature Inflation Targeting Regressions")
 temp_inflation_regs_list <-
   temp_inflation_list |>
-  map(~ reg(.x))
+  map(~ reg(.x, rows_keep = 8))
 toc()
 
 ## Precip regressions ----
@@ -102,7 +102,7 @@ formula <- as.formula(
 tic("Precipitation Inflation Targeting Regressions")
 precip_inflation_regs_list <-
   precip_inflation_list |>
-  map(~ reg(.x))
+  map(~ reg(.x, rows_keep = 8))
 toc()
 
 # Export ---------------------------------------------------------------
