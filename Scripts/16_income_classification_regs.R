@@ -84,7 +84,7 @@ formula <- as.formula(
 tic("Temperature Income Classification Regressions")
 temp_income_reg_list <-
   temp_income_classification_list |>
-  map(~ reg(.x))
+  map(~ reg(.x, rows_keep = 8))
 toc()
 
 # Precip regressions ----
@@ -102,7 +102,7 @@ formula <- as.formula(
 tic("Precipitation Income Classification Regressions")
 precip_income_reg_list <-
   precip_income_classification_list |>
-  map(~ reg(.x))
+  map(~ reg(.x, rows_keep = 8))
 toc()
 
 # Export ---------------------------------------------------------------
