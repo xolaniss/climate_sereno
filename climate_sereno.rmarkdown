@@ -95,6 +95,7 @@ source(here("Functions","modelplot_word.R" ))
 source(here("Functions","borderlines.R" ))
 ```
 
+
 # Introduction
 The post-pandemic surge of inflation to a four-decade high in many advanced and emerging markets has renewed interest in the drivers of aggregate inflation and prompted questions on the optimal response of the monetary authorities to deviations from target (ref: Chris Giles, FT). While the consensus is strong with respect to the need for curbing excess demand-pull inflation by means of monetary tightening, adverse supply shocks that push prices up and output down create difficult policy trade-offs [@klomp2020]. A key tenet of modern monetary policymaking under flexible average inflation-targeting regimes is indeed to “look through” transitory trade-off inducing supply shocks, especially if originated in specific markets, unless their persistence threatens the stability of expectations and inflation to become entrenched (…). On these lines, although the recent inflationary episode was supposedly driven by a series of idiosyncratic developments - namely, supply-chain bottlenecks, changes in relative prices, and Russia’s invasion of Ukraine, possibly exacerbated by firms’ excessive market power [@stiglitz2023] - central banks have responded by sustaining high interest rates purportedly to slay aggregate demand.
 In the latest BIS annual report, such forceful global tightening action is celebrated for it sent “a strong signal to markets, firms and workers that the central bank would do what it took to restore price stability” (BIS 2024, p.  …). As a result, “inflation is now again returning to the price stability region while economic activity and labour markets have proved resilient” (idib., p.  …). In academic circles, however, the firm adoption of a contractionary stance is generally seen as a blunt and unnecessarily costly revival of the monetarist doctrine, which overshadows alternative instruments of price stabilisation [see, for example, @stiglitz2023; @weber2023]. Correctly identifying the origins of inflation (along with producing reliable forecasts and indicators of future expectations) is key to tailoring an appropriate policy response.
@@ -138,6 +139,7 @@ In contrast to the spillover effects of supply-side shocks, demand shocks do not
 
 Furthermore, Ferrante et al (2023) note that the post-pandemic inflationary effects of the demand reallocation from services to goods were amplified by the sectoral heterogeneity in price rigidity: industries that produce goods have more flexible prices than those that produce services and so service-producing sectors reduce production swiftly, with only modest declines in prices. Thus, another important question to understand the origins of aggregate inflation is whether climate change spurs demand in sectors with relatively more flexible prices than shrinking sectors.
 
+
 ```{r}
 #| label: fig-flowchart
 #| fig-cap: Flow chart of price propagation from weather shocks
@@ -149,6 +151,7 @@ knitr::include_graphics("flow_chart.png", dpi = 300)
 
 ```
 
+
 In summary, a weather shock translates into idiosyncratic inflation via three channels: (i) on the demand-side, the price effect is ambiguous and depends on the sector-specific demand response to the weather shock; on the supply-side, (ii) a sector-specific weather shock changes the price in that sector directly and, lastly, (iii) by affecting the price of any other sector that supply inputs to the focal sector, it travels downstream (network weather shock). The cross-sector sum of these effects will result into aggregate inflation.
 
 Given the complex interplay of upward and downward forces on prices, the overall reaction of inflation to weather shocks depends on which countervailing dynamic dominates [@parker2018]. Moreover, “a negligible or null effect of local weather shocks on a given sector may be amplified or mitigated by weather shocks hitting other sectors with strong commercial inter linkages” [@zappala2024]. Climate change is therefore highly sectoral by nature.
@@ -158,6 +161,7 @@ Given the complex interplay of upward and downward forces on prices, the overall
 
 ## Prices
 We build a global dataset of monthly Consumer Price indexes and sectoral sub-indexes sourced from Haver Analytics. We use non-seasonally adjusted data due to better coverage and we remove seasonal effects. By matching the 12 CPI categories  which classify consumer expenditure to the standard taxonomy of industrial sectors (UN 2008), we derive sectoral retail prices – see @tbl-cpi_matching.^[We exclude ‘Alcohol and Tobacco’ prices as well as ‘Other’ prices due to the impossibility of properly matching these products to a particular industrial sector.] Our sample covers 151 countries from January 1980 to December 2023; however, to make the panel more balanced, we restrict the analysis to the period 2000-2023 (details on data availability per country-sector are in Table A1 in the Appendix). 
+
 
 
 ```{r}
@@ -184,6 +188,7 @@ tribble( ~"No.", ~"CPI category", ~"Industry Classification",
 
 
 ```
+
 
 
 ## Weather shocks
@@ -262,6 +267,7 @@ To test whether sectoral market competition/concentration influences the extent 
 
 ## Long run effects of weather shocks on sectoral inflation
 
+
 ```{r}
 #| label: fig-baseline_temp
 #| fig-cap: "Baseline model: domestic and foreign effects of temperature shocks on sectoral inflation"
@@ -282,7 +288,9 @@ baseline_plots <- read_rds(here("Outputs", "artifacts_baseline_regs_plots.rds"))
 ```
 
 
+
 ## Accounting for weather seasons
+
 
 ```{r}
 #| label: fig-seasonal_temp
@@ -302,7 +310,9 @@ seasonal_plots <- read_rds(here("Outputs", "artifacts_hermisphere_reg_plots.rds"
 (seasonal_plots$foreign_agric_precip_5_95 + seasonal_plots$foreign_non_agric_precip_5_95)
 ```
 
+
 # Does level of income matter?
+
 
 ```{r}
 #| eval: FALSE
@@ -316,7 +326,6 @@ income_plots <- read_rds(here("Outputs", "artifacts_income_classification_plots.
 
 ```
 
-
 ```{r}
 #| eval: FALSE
 #| label: fig-income_precip
@@ -326,7 +335,9 @@ income_plots <- read_rds(here("Outputs", "artifacts_income_classification_plots.
 (income_plots$foreign_agric_precip_5_95 + income_plots$foreign_non_agri_precip_5_95)
 ```
 
+
 # Importance of inflation targeting
+
 ```{r}
 #| label: fig-inflation_targeting_temp
 #| fig-cap: "Inflation targeting model: domestic and foreign effects of temperature shocks on sectoral inflation"
@@ -339,6 +350,7 @@ inflation_targeting_plots <- read_rds(here("Outputs", "artifacts_inflation_targe
   (inflation_targeting_plots$inflation_temp_5_95)
 
 ```
+
 
 
 
@@ -364,6 +376,7 @@ inflation_targeting_plots <- read_rds(here("Outputs", "artifacts_inflation_targe
 # Appendix: Data 
 
 ## Inflation rates
+
 
 ```{r}
 #| label: tbl-inflation_summary
@@ -434,9 +447,11 @@ inflation_summary_tbl |>
 
 ```
 
+
 \newpage
 
 ## Countries and month-sectors in sample
+
 
 ```{r}
 #| label: tbl-countries_month_sectors
@@ -466,9 +481,11 @@ inflation_tbl |>
 ```
 
 
+
 \newpage
 
 ## Climate shocks
+
 
 ```{r}
 #| label: tbl-climate_shocks
@@ -628,8 +645,10 @@ climate_summary_tbl |>
 
 ```
 
+
 \newpage
 ## Matching sectoral price and IO data
+
 
 ```{r}
 #| label: tbl-sectoral_matching
@@ -663,9 +682,11 @@ tribble(
 
 ```
 
+
 \newpage
 
 ## Stationarity tests
+
 
 ```{r}
 #| label: tbl-stationarity_tests
@@ -742,6 +763,7 @@ bind_rows(
 ```
 
 
+
 \setcounter{table}{0}
 \renewcommand{\thetable}{B\arabic{table}}
 
@@ -752,6 +774,7 @@ bind_rows(
 # Appendix: Additional results
 
 ## Baseline results at 10th and 90th percentiles
+
 ```{r}
 #| label: fig-baseline_temp_10_90
 #| fig-cap: "Baseline model: domestic and foreign effects of temperature shocks on sectoral inflation"
@@ -768,7 +791,9 @@ bind_rows(
 (baseline_plots$foreign_agric_precip_10_90 + baseline_plots$foreign_non_agri_precip_10_90)
 ```
 
+
 ## Baseline results with standardised shocks
+
 ```{r}
 #| label: fig-baseline_temp_std
 #| fig-cap: "Baseline model: domestic and foreign effects of temperature standardised shocks on sectoral inflation"

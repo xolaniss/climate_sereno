@@ -5,7 +5,7 @@ function(data, term_var, low_model, high_model ){
     filter(model %in% c(low_model, high_model)) |>
     ggplot(aes(y = sector, x = estimate, color = model)) +
     geom_vline(xintercept = 0, linetype = "dashed") +
-    geom_point(size = 3, position = position_dodge(0.4)) +
+    geom_point(size = 1.5, position = position_dodge(0.5)) +
     geom_errorbar(aes(xmin = conf.low, xmax = conf.high),
                   width = 0.5, position = position_dodge(0.4)) +
     theme_bw() +
@@ -19,7 +19,7 @@ function(data, term_var, low_model, high_model ){
       axis.text.x = element_text(angle = 90),
       axis.title = element_text(size = 7),
       plot.tag = element_text(size = 8)) +
-    labs(x = "Coefficient estimates and 95% confidence interval", y = "") +
-    scale_color_manual(values = pnw_palette("Bay", 2)) +
-    coord_flip()
+    labs(x = "Coefficients", y = "") +
+    scale_color_manual(values = pnw_palette("Bay", 2))
+    # coord_flip()
 }

@@ -64,85 +64,85 @@ args_list <- list(
     "temp_baseline_95"
   ),
   # Domestic agricultural temperature and precipitation shock with inflation targeting
-  "dom_agric_temp_infl_10_90" = c(
+  "dom_agric_temp_10_90" = c(
     "domestic_agricultural_temperature_shock",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "dom_agric_precip_infl_10_90" = c(
+  "dom_agric_precip_10_90" = c(
     "domestic_agricultural_precipitation_shock",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "dom_agric_temp_inf_5_95" = c(
+  "dom_agric_temp_5_95" = c(
     "domestic_agricultural_temperature_shock",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "dom_agric_precip_inf_5_95" = c(
+  "dom_agric_precip_5_95" = c(
     "domestic_agricultural_precipitation_shock",
     "precip_baseline_5",
     "precip_baseline_95"
   ),
   # Domestic non agricultural temperature and precipitation shock with inflation targeting
-  "dom_non_agric_temp_infl_10_90" = c(
+  "dom_non_agric_temp_10_90" = c(
     "domestic_non_agricultural_temperature_shock",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "dom_non_agric_precip_infl_10_90" = c(
+  "dom_non_agric_precip_10_90" = c(
     "domestic_non_agricultural_precipitation_shock",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "dom_non_agric_temp_inf_5_95" = c(
+  "dom_non_agric_temp_5_95" = c(
     "domestic_non_agricultural_temperature_shock",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "dom_non_agric_precip_inf_5_95" = c(
+  "dom_non_agric_precip_5_95" = c(
     "domestic_non_agricultural_precipitation_shock",
     "precip_baseline_5",
     "precip_baseline_95"
   ),
   # Foreign agricultural temperature and precipitation shock with inflation targeting
-  "foreign_agric_temp_infl_10_90" = c(
+  "foreign_agric_temp_10_90" = c(
     "foreign_agricultural_temperature_shock",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "foreign_agric_precip_infl_10_90" = c(
+  "foreign_agric_precip_10_90" = c(
     "foreign_agricultural_precipitation_shock",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "foreign_agric_temp_inf_5_95" = c(
+  "foreign_agric_temp_5_95" = c(
     "foreign_agricultural_temperature_shock",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "foreign_agric_precip_inf_5_95" = c(
+  "foreign_agric_precip_5_95" = c(
     "foreign_agricultural_precipitation_shock",
     "precip_baseline_5",
     "precip_baseline_95"
   ),
   # Foreign non agricultural temperature and precipitation shock with inflation targeting
-  "foreign_non_agric_temp_infl_10_90" = c(
+  "foreign_non_agric_temp_10_90" = c(
     "foreign_non_agricultural_temperature_shock",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "foreign_non_agric_precip_infl_10_90" = c(
+  "foreign_non_agric_precip_10_90" = c(
     "foreign_non_agricultural_precipitation_shock",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "foreign_non_agric_temp_inf_5_95" = c(
+  "foreign_non_agric_temp_5_95" = c(
     "foreign_non_agricultural_temperature_shock",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "foreign_non_agric_precip_inf_5_95" = c(
+  "foreign_non_agric_precip_5_95" = c(
     "foreign_non_agricultural_precipitation_shock",
     "precip_baseline_5",
     "precip_baseline_95"

@@ -155,7 +155,7 @@ standardised_regs_plots_list <-
   my_model_plots(
   args_list = args_list,
   data = standardised_regs_tbl,
-  model = "Standardised",
+  model = "Standardised"
 )
 
 # Export ---------------------------------------------------------------

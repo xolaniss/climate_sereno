@@ -172,6 +172,6 @@ artifacts_baseline_regs <- list (
   baseline_regs_plots_list = baseline_regs_plots_list
 )
 
-write_rds(artifacts_baseline_regs, file = here("Outputs", "artifacts_baseline_regs.rds"))
+write_rds(artifacts_baseline_regs, file = here("Outputs", "artifacts_baseline_regs_plots.rds"))
 
 
