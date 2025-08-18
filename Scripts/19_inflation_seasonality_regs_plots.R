@@ -50,6 +50,8 @@ source(here("Functions", "my_model_plot.R"))
 inflation_seasonality_regs_tbl <- read_rds(here("Outputs", "artifacts_inflation_seasonality_regs.rds")) |>
   list_cleanup()
 
+unique(inflation_seasonality_regs_tbl$sector)
+
 # Argument list -----------------------------
 args_list <- list(
   #Inflation

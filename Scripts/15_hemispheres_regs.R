@@ -90,7 +90,7 @@ formula <- as.formula(
     year")
 
 tic("hemisphere temp regressions")
-temp_hemisphere_reg_list <- temp_hemisphere_list |> map( ~ reg(.x, rows_keep = 8))
+temp_hemisphere_reg_list <- temp_hemisphere_list |> map( ~ reg(.x, rows_keep = 7))
 toc()
 
 
@@ -107,7 +107,7 @@ formula <- as.formula(
     year")
 
 tic("hemisphere precip regressions")
-precip_hemisphere_reg_list <- precip_hemisphere_list |> map( ~ reg(.x, rows_keep = 8))
+precip_hemisphere_reg_list <- precip_hemisphere_list |> map( ~ reg(.x, rows_keep = 7))
 toc()
 
 
