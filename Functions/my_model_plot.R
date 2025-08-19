@@ -21,7 +21,7 @@ function(data, term_var, low_model, high_model ){
       axis.title = element_text(size = 7),
       axis.line = element_line(color = 'black'),
       plot.tag = element_text(size = 8)) +
-    labs(x = "Inflation response (pp)", y = "") +
+    labs(x = "Inflation response (pp)", y = "", col = "") +
     scale_color_manual(values = pnw_palette("Bay", 2))
     # coord_flip()
 }

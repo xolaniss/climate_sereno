@@ -297,19 +297,25 @@ inflation_targeting_plots <- read_rds(here("Outputs", "artifacts_inflation_targe
 
 ```{r}
 #| label: fig-baseline_direct
-#| fig-cap: "Local effects of temperature shocks on sectoral inflation"
+#| fig-cap: "Local effects of weather shocks on sectoral inflation"
+plot_details <- function(plot, panel_name, color_scheme = "Bay"){
+  plot +
+    labs(title = panel_name) +
+    scale_color_manual(
+      values = pnw_palette(color_scheme, 2),
+      labels = c("<5th percentile ", ">95th percentile")
+    ) +
+    theme(plot.title= element_text(size = 8, face = "bold", hjust = 0.5))
+}
 
-plot_a <- baseline_plots$dom_agric_temp_5_95  +
-  labs(title = "Panel A: Hot and cold temperature shocks on agriculture") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_b <- baseline_plots$dom_non_agri_temp_5_95 +
-  labs(title = "Panel B: Hot and cold temperature shocks on non-agriculture") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_c <- baseline_plots$dom_agric_precip_5_95 +
-  labs(title = "Panel C: Wet and dry precipitation shocks on agriculture") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_d <- baseline_plots$dom_non_agri_precip_5_95 +
-  labs(title = "Panel D: Wet and dry precipitation shocks on non-agriculture") + scale_color_manual(values = pnw_palette("Winter", 2))
+plot_a <- baseline_plots$dom_agric_temp_5_95 |>  
+  plot_details("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots$dom_non_agri_temp_5_95 |> 
+  plot_details("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots$dom_agric_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots$dom_non_agri_precip_5_95 |> 
+  plot_details("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
 
 (plot_a + plot_b) / (plot_c + plot_d)
 ```
@@ -319,21 +325,20 @@ plot_d <- baseline_plots$dom_non_agri_precip_5_95 +
 
 ```{r}
 #| label: fig-baseline_network
-#| fig-cap: "Network effects of temperature shocks on sectoral inflation"
+#| fig-cap: "Network effects of weather shocks on sectoral inflation"
 
-plot_a <- baseline_plots$foreign_agric_temp_5_95  +
-  labs(title = "Panel A: Hot and cold temperature shocks on agriculture") + scale_color_manual(values = pnw_palette("Bay", 2))
 
-plot_b <- baseline_plots$foreign_non_agri_temp_5_95 +
-  labs(title = "Panel B: Hot and cold temperature shocks on non-agriculture") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_c <- baseline_plots$foreign_agric_precip_5_95 +
-  labs(title = "Panel C: Wet and dry precipitation shocks on agriculture") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_d <- baseline_plots$foreign_non_agri_precip_5_95 +
-  labs(title = "Panel D: Wet and dry precipitation shocks on non-agriculture") + scale_color_manual(values = pnw_palette("Winter", 2))
+plot_a <- baseline_plots$foreign_agric_temp_5_95 |>  
+  plot_details("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots$foreign_non_agri_temp_5_95 |>
+  plot_details("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots$foreign_agric_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots$foreign_non_agri_precip_5_95 |>
+  plot_details("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
 
 (plot_a + plot_b) / (plot_c + plot_d)
+
 ```
 
 
@@ -345,17 +350,14 @@ plot_d <- baseline_plots$foreign_non_agri_precip_5_95 +
 #| label: fig-seasonal_direct 
 #| fig-cap: "Local seasonal effects of weather shocks on sectoral inflation"
 
-plot_a <- seasonal_plots$season_winter_temp_5_95 +
-  labs(title = "Panel A: Warm and cold temperature shocks in winter") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_b <- seasonal_plots$intercept_temp_5_95 +
-  labs(title = "Panel B: Warm and cold temperature shocks in summer") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_c <- seasonal_plots$season_winter_precip_5_95 +
-  labs(title = "Panel B: Wet and dry precipitation shocks in winter") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_d <- seasonal_plots$intercept_precip_5_95 +
-  labs(title = "Panel D: Wet and dry precipitation shocks in summer") + scale_color_manual(values = pnw_palette("Winter", 2))
+plot_a <- seasonal_plots$season_winter_temp_5_95 |> 
+  plot_details("Panel A: Warm and cold temperature shocks in winter")
+plot_b <- seasonal_plots$intercept_temp_5_95 |>
+  plot_details("Panel B: Warm and cold temperature shocks in summer")
+plot_c <- seasonal_plots$season_winter_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks in winter", "Winter")
+plot_d <- seasonal_plots$intercept_precip_5_95 |>
+  plot_details("Panel D: Wet and dry precipitation shocks in summer", "Winter")
 
 (plot_a + plot_b) / (plot_c + plot_d)
 ```
@@ -366,27 +368,24 @@ plot_d <- seasonal_plots$intercept_precip_5_95 +
 ```{r}
 #| label: fig-income_direct
 #| fig-cap: "Income effects of weather shocks on sectoral inflation"
+#| fig-height: 8
+ 
+plot_a <- income_plots$income_classification_temp_dev_5_95 |> 
+  plot_details("Panel A: Hot and cold temperature shocks in developing countries")
+plot_b <- income_plots$income_classification_precip_dev_5_95 |>
+  plot_details("Panel B: Wet and dry precipitation shocks in developing countries", "Winter")
 
-plot_a <- income_plots$income_classification_temp_dev_5_95 +
-  labs(title = "Panel A: Developing countries") + scale_color_manual(values = pnw_palette("Bay", 2))
+plot_c <- income_plots$income_classification_temp_eme_5_95 |>
+  plot_details("Panel C: Hot and cold temperature shocks in emerging countries")
+plot_d <- income_plots$income_classification_precip_eme_5_95 |>
+  plot_details("Panel D: Wet and dry precipitation shocks in emerging countries", "Winter")
 
-plot_b <- income_plots$income_classification_temp_eme_5_95 +
-  labs(title = "Panel B: Emerging countries") + scale_color_manual(values = pnw_palette("Bay", 2))
+plot_e <- income_plots$intercept_temp_5_95 |>
+  plot_details("Panel E: Hot and cold temperature shocks in advanced countries")
+plot_f <- income_plots$intercept_precip_5_95 |>
+  plot_details("Panel F: Wet and dry precipitation shocks in advanced countries", "Winter")
 
-plot_c <- income_plots$intercept_temp_5_95 +
-  labs(title = "Panel C: Advanced countries") + scale_color_manual(values = pnw_palette("Bay", 2))
-
-plot_d <- income_plots$income_classification_precip_dev_5_95 +
-  labs(title = "Panel B: Developing countries") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_e <- income_plots$income_classification_precip_eme_5_95 +
-  labs(title = "Panel E: Emerging countries") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_f <- income_plots$intercept_precip_5_95 +
-  labs(title = "Panel F: Advanced countries") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-(plot_a + plot_b + plot_c )/ (plot_d + plot_e + plot_f)
-
+(plot_a + plot_b) / (plot_c + plot_d) / (plot_e + plot_f)
 ```
 
 
@@ -396,19 +395,17 @@ plot_f <- income_plots$intercept_precip_5_95 +
 #| label: fig-inflation_targeting_direct
 #| fig-cap: "Inflation targeting effects of weather shocks on sectoral inflation"
 
-plot_a <- inflation_targeting_plots$inflation_targeting_temp_5_95 +
-  labs(title = "Panel A: Hot and cold temperature shocks in inflation-targeting countries") + scale_color_manual(values = pnw_palette("Bay", 2))
+plot_a <- inflation_targeting_plots$inflation_targeting_temp_5_95 |> 
+  plot_details("Panel A: Hot and cold temperature shocks in inflation-targeting countries")
+plot_b <- inflation_targeting_plots$intercept_temp_5_95 |>
+  plot_details("Panel B: Hot and cold temperature shocks in non-inflation-targeting countries")
+plot_c <- inflation_targeting_plots$inflation_targeting_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks in inflation-targeting countries", "Winter")
+plot_d <- inflation_targeting_plots$intercept_precip_5_95 |>
+  plot_details("Panel D: Wet and dry precipitation shocks in non-inflation-targeting countries", "Winter")
 
-plot_b <- inflation_targeting_plots$intercept_temp_5_95 +
-  labs(title = "Panel A: Hot and cold temperature shocks in non-inflation-targeting countries") + scale_color_manual(values = pnw_palette("Bay", 2))
+(plot_a + plot_b) / (plot_c + plot_d)
 
-plot_c <- inflation_targeting_plots$inflation_targeting_precip_5_95 +
-  labs(title = "Panel B: Wet and dry precipitation shocks in inflation-targeting countries") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-plot_d <- inflation_targeting_plots$intercept_precip_5_95 +
-  labs(title = "Panel D: Wet and dry precipitation shocks in non-inflation-targeting countries") + scale_color_manual(values = pnw_palette("Winter", 2))
-
-(plot_a + plot_b)/ (plot_c + plot_d)
 ```
 
 
@@ -827,55 +824,80 @@ bind_rows(
 
 ## Baseline results at 10th and 90th percentiles
 ```{r}
-#| label: fig-baseline_temp_10_90
-#| fig-cap: "Baseline model: domestic and foreign effects of temperature shocks on sectoral inflation"
+#| label: fig-baseline_local_10_90
+#| fig-cap: "Local effects of temperature shocks on sectoral inflation (10th and 90th percentiles)"
 
-effects_plot(model = baseline_plots, 
-             dom_agric_var = "dom_agric_temp_10_90",
-             dom_non_agric_var = "dom_non_agri_temp_10_90",
-             foreign_agric_var = "foreign_agric_temp_10_90",
-             foreign_non_agric_var = "foreign_non_agri_temp_10_90"
-             )
+plot_details_10_90 <- function(plot, panel_name, color_scheme = "Bay"){
+  plot +
+    labs(title = panel_name) +
+    scale_color_manual(
+      values = pnw_palette(color_scheme, 2),
+      labels = c("<10th percentile ", ">90th percentile")
+    ) +
+    theme(plot.title= element_text(size = 8, face = "bold", hjust = 0.5))
+}
+
+
+plot_a <- baseline_plots$dom_agric_temp_10_90 |>  
+  plot_details_10_90("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots$dom_non_agri_temp_10_90 |> 
+  plot_details_10_90("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots$dom_agric_precip_10_90 |>
+  plot_details_10_90("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots$dom_non_agri_precip_10_90 |> 
+  plot_details_10_90("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
+
+(plot_a + plot_b) / (plot_c + plot_d)
 ```
 
 ```{r}
-#| label: fig-baseline_precip_10_90
-#| fig-cap: "Baseline model: domestic and foreign effects of precipitation shocks on sectoral inflation"
+#| label: fig-baseline_network_10_90
+#| fig-cap: "Network effects of weather shocks on sectoral inflation (10th and 90th percentiles)"
 
-effects_plot(model = baseline_plots, 
-             dom_agric_var = "dom_agric_precip_10_90",
-             dom_non_agric_var = "dom_non_agri_precip_10_90",
-             foreign_agric_var = "foreign_agric_precip_10_90",
-             foreign_non_agric_var = "foreign_non_agri_precip_10_90"
-             )
+plot_a <- baseline_plots$foreign_agric_temp_10_90 |>  
+  plot_details_10_90("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots$foreign_non_agri_temp_10_90 |>
+  plot_details_10_90("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots$foreign_agric_precip_10_90 |>
+  plot_details_10_90("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots$foreign_non_agri_precip_10_90 |>
+  plot_details_10_90("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
+
+(plot_a + plot_b) / (plot_c + plot_d)
 ```
 
 ## Baseline results with standardised shocks
 ```{r}
-#| label: fig-baseline_temp_std
-#| fig-cap: "Baseline model: domestic and foreign effects of temperature standardised shocks on sectoral inflation"
-#| 
+#| label: fig-baseline_local_std
+#| fig-cap: "Local effects of temperature shocks on sectoral inflation (standardised shocks)"
+
 baseline_plots_std <- read_rds(here("Outputs", "artifacts_standardised_regs_plots.rds")) |> pluck(1)
 
-effects_plot(model = baseline_plots_std, 
-             dom_agric_var = "dom_agric_temp_5_95",
-             dom_non_agric_var = "dom_non_agric_temp_5_95",
-             foreign_agric_var = "foreign_agric_temp_5_95",
-             foreign_non_agric_var = "foreign_non_agric_temp_5_95",
-             color = "Sunset" 
-             )
+plot_a <- baseline_plots_std$dom_agric_temp_5_95 |>  
+  plot_details("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots_std$dom_non_agric_temp_5_95 |> 
+  plot_details("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots_std$dom_agric_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots_std$dom_non_agric_precip_5_95 |> 
+  plot_details("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
+
+(plot_a + plot_b) / (plot_c + plot_d)
 ```
 
 ```{r}
-#| label: fig-baseline_precip_std
-#| fig-cap: "Baseline model: domestic and foreign effects of precipitation standardised shocks on sectoral inflation"
+#| label: fig-baseline_network_std
+#| fig-cap: "Network effects of weather shocks on sectoral inflation (standardised shocks)"
 
-effects_plot(model = baseline_plots_std, 
-             dom_agric_var = "dom_agric_precip_5_95",
-             dom_non_agric_var = "dom_non_agric_precip_5_95",
-             foreign_agric_var = "foreign_agric_precip_5_95",
-             foreign_non_agric_var = "foreign_non_agric_precip_5_95",
-             color = "Sunset"
-             )
+plot_a <- baseline_plots_std$foreign_agric_temp_5_95 |>  
+  plot_details("Panel A: Hot and cold temperature shocks on agriculture")
+plot_b <- baseline_plots_std$foreign_non_agric_temp_5_95 |>
+  plot_details("Panel B: Hot and cold temperature shocks on non-agriculture")
+plot_c <- baseline_plots_std$foreign_agric_precip_5_95 |>
+  plot_details("Panel C: Wet and dry precipitation shocks on agriculture", "Winter")
+plot_d <- baseline_plots_std$foreign_non_agric_precip_5_95 |>
+  plot_details("Panel D: Wet and dry precipitation shocks on non-agriculture", "Winter")
+
+(plot_a + plot_b) / (plot_c + plot_d)
 ```
 
