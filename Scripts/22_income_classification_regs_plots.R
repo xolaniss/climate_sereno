@@ -52,9 +52,30 @@ source(here("Functions", "my_model_plot.R"))
 income_classification_tbl <-
   read_rds(here("Outputs", "artifacts_income_regs.rds")) |>
   list_cleanup()
-income_classification_tbl$term
+
 # Args list ------------------
 args_list <- list(
+  # Intercept
+  "intercept_temp_10_90" = c(
+    "(Intercept)",
+    "temp_baseline_10",
+    "temp_baseline_90"
+  ),
+  "intercept_temp_5_95" = c(
+    "(Intercept)",
+    "temp_baseline_5",
+    "temp_baseline_95"
+  ),
+  "intercept_precip_10_90" = c(
+    "(Intercept)",
+    "precip_baseline_10",
+    "precip_baseline_90"
+  ),
+  "intercept_precip_5_95" = c(
+    "(Intercept)",
+    "precip_baseline_5",
+    "precip_baseline_95"
+  ),
   # Inflation
   "inflation_temp_10_90" = c(
     "lag(inflation_rate)",
@@ -161,42 +182,42 @@ args_list <- list(
     "precip_baseline_95"
   ),
   # Income classification
-  "income_classification_temp_10_90" = c(
+  "income_classification_temp_dev_10_90" = c(
     "income_classificationDeveloping",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "income_classification_temp_5_95" = c(
+  "income_classification_temp_dev_5_95" = c(
     "income_classificationDeveloping",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "income_classification_precip_10_90" = c(
+  "income_classification_precip_dev_10_90" = c(
     "income_classificationDeveloping",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "income_classification_precip_5_95" = c(
+  "income_classification_precip_dev_5_95" = c(
     "income_classificationDeveloping",
     "precip_baseline_5",
     "precip_baseline_95"
   ),
-  "income_classification_temp_10_90" = c(
+  "income_classification_temp_eme_10_90" = c(
     "income_classificationEmerging",
     "temp_baseline_10",
     "temp_baseline_90"
   ),
-  "income_classification_temp_5_95" = c(
+  "income_classification_temp_eme_5_95" = c(
     "income_classificationEmerging",
     "temp_baseline_5",
     "temp_baseline_95"
   ),
-  "income_classification_precip_10_90" = c(
+  "income_classification_precip_eme_10_90" = c(
     "income_classificationEmerging",
     "precip_baseline_10",
     "precip_baseline_90"
   ),
-  "income_classification_precip_5_95" = c(
+  "income_classification_precip_eme_5_95" = c(
     "income_classificationEmerging",
     "precip_baseline_5",
     "precip_baseline_95"

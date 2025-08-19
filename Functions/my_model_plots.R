@@ -7,6 +7,6 @@ function(args_list, data, title, model_type){
 
     my_model_plot(data, term_var, low_model, high_model) +
       labs(
-        title = glue("{model_type} estimates for {term_var}")
+        title = NULL  #glue("{model_type} estimates for {term_var}")
       )})
 }
