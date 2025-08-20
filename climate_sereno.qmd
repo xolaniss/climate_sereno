@@ -47,6 +47,7 @@ options(scipen=999)
 knitr::opts_chunk$set(echo = FALSE, 
                       warning = FALSE, 
                       message = FALSE, 
+                      cache = FALSE,
                       dpi = 500, 
                       fig.pos = "H", 
                       fig.env= 'figure', 
@@ -56,7 +57,7 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.width = 10,
                       fig.height = 6
                       )
-library(tidyverse)
+library(tidyverse) |> suppressPackageStartupMessages()
 library(readr)
 library(readxl)
 library(zoo)
@@ -159,15 +160,14 @@ Climate-induced demand shocks. Beyond driving cost-push inflation up, the climat
 In contrast to the spillover effects of supply-side shocks, demand shocks do not give rise to price transmission from customers to suppliers despite the presence of sectoral interlinkages:  for example, if as a result of a weather shock consumers’ demand for hospitality falls, this will likely affect the price of the focal sector (i.e., hospitality sector) without altering the price of its suppliers (i.e. food or construction industry).^[A few authors study demand shocks’ transmission across sectoral production and highlight specific conditions whereby upstream propagation may arise (Acemoglu et al. 2012, Arata and Miyakawa 2022).] 
 
 Furthermore, Ferrante et al (2023) note that the post-pandemic inflationary effects of the demand reallocation from services to goods were amplified by the sectoral heterogeneity in price rigidity: industries that produce goods have more flexible prices than those that produce services and so service-producing sectors reduce production swiftly, with only modest declines in prices. Thus, another important question to understand the origins of aggregate inflation is whether climate change spurs demand in sectors with relatively more flexible prices than shrinking sectors.
+\newpage
 
 ```{r}
 #| label: fig-flowchart
 #| fig-cap: Flow chart of price propagation from weather shocks
-#| fig-pos: h
-#| fig-width: 20
-#| fig-height: 4
+#| out.width: "75%"
 
-knitr::include_graphics("flow_chart.png", dpi = 300)
+knitr::include_graphics("flow_chart.png")
 
 ```
 
@@ -196,13 +196,13 @@ tribble( ~"No.", ~"CPI category", ~"Industry Classification",
           "7", "Transport", "Transportation and storage",
           "8", "Health", "Human health and social work activities",
           "9", "Recreation", "Arts, entertainment and recreation",
-          "10", "Education", "Education",
-          "11", "Communication", "Information and communication",
-          "12", "Hotels", "Accommodation and food service activities"
+          # "10", "Education", "Education",
+          "10", "Communication", "Information and communication",
+          "11", "Hotels", "Accommodation and food service activities"
 ) |> 
-  flextable_word() 
-  # align(align = "left", part = "all") |>
-  # autofit(add_w = 0.6)
+  flextable_word() |> 
+  align(align = "left", part = "all") |>
+  autofit(add_w = 0.8)
 
 
 ```
@@ -298,6 +298,7 @@ inflation_targeting_plots <- read_rds(here("Outputs", "artifacts_inflation_targe
 ```{r}
 #| label: fig-baseline_direct
 #| fig-cap: "Local effects of weather shocks on sectoral inflation"
+
 plot_details <- function(plot, panel_name, color_scheme = "Bay"){
   plot +
     labs(title = panel_name) +
@@ -820,6 +821,75 @@ bind_rows(
 \renewcommand{\thefigure}{B\arabic{figure}}
 
 
+
+\newpage
+# Appendix: Controls
+
+```{r}
+#| label: tbl-controls_hemisphere
+#| tbl-cap: "Hemisphere classification for weather seasons"
+#| ft.arraystretch: 0.4
+controls <- read_rds(here("Outputs", "artifacts_controls_prep.rds"))
+controls|>   
+  pluck(1) |>
+  dplyr::select(-hemisphere) |> 
+  mutate(country = countrycode(country, "iso3c", "country.name")) |> 
+  rename(
+    "Country" = country,
+    "Hemisphere" = hemisphere_classification ) |> 
+  drop_na() |> 
+  flextable_word() |>
+  align(align = "left", part = "all") |>
+  autofit(add_w = 2)
+```
+
+\newpage
+```{r}
+#| label: tbl-controls_income
+#| tbl-cap: "Country income level classification"
+#| ft.arraystretch: 0.4
+
+controls |> 
+  pluck(2) |> 
+  mutate(country = countrycode(country, "iso3c", "country.name")) |> 
+  rename(
+    "Country" = country,
+    "Income level" = income_classification) |>
+  dplyr::select(-classification) |>
+  drop_na() |> 
+  flextable_word() |>
+  align(align = "left", part = "all") |>
+  autofit(add_w = 2)
+
+
+```
+
+\newpage
+```{r}
+#| label: tbl-controls_inflation_targeting
+#| tbl-cap: "Inflation targeting countries"
+#| ft.arraystretch: 0.4
+
+controls |> 
+  pluck(3) |> 
+  mutate(country = countrycode(country, "iso3c", "country.name")) |>
+  rename(
+    "Country" = country,
+    "Inflation targeting" = inflation_targeting) |>
+  dplyr::select(-target_start) |>
+  drop_na() |> 
+  flextable_word() |>
+  align(align = "left", part = "all") |>
+  autofit(add_w = 2)
+```
+
+\setcounter{table}{0}
+\renewcommand{\thetable}{B\arabic{table}}
+
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{B\arabic{figure}}
+
+\newpage
 # Appendix: Alternative results
 
 ## Baseline results at 10th and 90th percentiles

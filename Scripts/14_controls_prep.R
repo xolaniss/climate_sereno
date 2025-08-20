@@ -50,7 +50,7 @@ controls_tbl <- read_excel(here("Data", "Controls.xlsx")) |>
 hemisphere_tbl <-
   controls_tbl |>
   dplyr::select(country, hemisphere) |>
-  mutate(hemisphere_classification = if_else(hemisphere == 1, "northern", "southern"))
+  mutate(hemisphere_classification = if_else(hemisphere == 1, "Northern", "Southern"))
 
 # Income classification ----- # Source?
 income_classification_tbl <-
